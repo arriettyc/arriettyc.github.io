@@ -143,14 +143,67 @@ template {
   display: none;
 }
 @font-face {
-  font-family: 'lanting';
-  src: url("../fonts/lanting/lanting.eot"); /* IE9 */
-  src: url("../fonts/lanting/lanting.eot?#iefix") format('embedded-opentype'), /* IE6-IE8 */ url("../fonts/lanting/lanting.woff2") format('woff2'), url("../fonts/lanting/lanting.woff") format('woff'), url("../fonts/lanting/lanting.ttf") format('truetype'); /* chrome, firefox, opera, Safari, Android, iOS 4.2+ */
-  font-weight: 300;
-  font-display: swap;
+  font-family: "Computer Modern";
+  src: url("../fonts/computer-modern/cmunrm-webfont.ttf");
+}
+@font-face {
+  font-family: "Computer Modern";
+  src: url("../fonts/computer-modern-bold/cmunbx-webfont.ttf");
+  font-weight: bold;
+}
+@font-face {
+  font-family: "Computer Modern";
+  src: url("../fonts/computer-modern-italic/cmunti-webfont.ttf");
+  font-style: italic;
+}
+@font-face {
+  font-family: "Computer Modern";
+  src: url("../fonts/computer-modern-bold-italic/cmunbi-webfont.ttf");
+  font-weight: bold;
+  font-style: italic;
+}
+@font-face {
+  font-family: "source serif pro";
+  src: url("../fonts/source-serif-pro/SourceSerifPro-Regular.otf");
+}
+@font-face {
+  font-family: "source serif pro";
+  src: url("../fonts/source-serif-pro/SourceSerifPro-It.otf");
+  font-style: italic;
+}
+@font-face {
+  font-family: "source serif pro";
+  src: url("../fonts/source-serif-pro/SourceSerifPro-Semibold.otf");
+  font-weight: bold;
+}
+@font-face {
+  font-family: "source serif pro";
+  src: url("../fonts/source-serif-pro/SourceSerifPro-SemiboldIt.otf");
+  font-weight: bold;
+  font-style: italic;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("../fonts/IBM_Plex_Mono/IBMPlexMono-Regular.ttf");
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("../fonts/IBM_Plex_Mono/IBMPlexMono-Italic.ttf");
+  font-style: italic;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("../fonts/IBM_Plex_Mono/IBMPlexMono-SemiBold.ttf");
+  font-weight: bold;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("../fonts/IBM_Plex_Mono/IBMPlexMono-SemiBoldItalic.ttf");
+  font-weight: bold;
+  font-style: italic;
 }
 html {
-  font-family: 'Microsoft Jhenghei', Lantinghei SC, 'lanting', PingFang SC, Seguo UI, Microsoft Yahei, Arial;
+  font-family: 'IBM Plex Mono', 'Noto Sans SC', 'Noto Sans JP', 'STSong', 'Songti SC', 'Noto Sans KR';
 }
 html::-webkit-scrollbar {
   width: 8px;
@@ -716,6 +769,9 @@ header label {
   margin: 0;
   padding-top: 0;
 }
+.description {
+  font-size: 20px;
+}
 .post-wrap p {
   font-size: 1em;
   margin: 1em 0 1em 0;
@@ -899,7 +955,7 @@ header label {
   color: #87878d;
 }
 .post-content blockquote {
-  font-size: 1rem;
+  font-size: 1.1rem;
   display: block;
   margin: 1em 0;
   padding: 1em 1.2em 1em 1.2em;
