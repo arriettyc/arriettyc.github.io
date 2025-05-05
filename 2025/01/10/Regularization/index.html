@@ -13,7 +13,7 @@
 
 
 
-<title>Decoder Only | Xin&#39;s Blog</title>
+<title>NN Regularization - Dropout In Additional Transformer Head | Xin&#39;s Blog</title>
 
 
 
@@ -203,7 +203,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">Decoder Only</h1>
+            <h1 class="post-title">NN Regularization - Dropout In Additional Transformer Head</h1>
             
                 <div class="post-meta">
                     
@@ -212,7 +212,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">January 8, 2025&nbsp;&nbsp;0:00:00</a>
+                        Date: <a href="#">January 10, 2025&nbsp;&nbsp;21:46:41</a>
                         </span>
                     
                     
@@ -221,49 +221,43 @@
         </header>
 
         <div class="post-content">
-            <p>Origin Transformers &#x3D; Encoder + Decoder</p>
-<p>When the Transformer model architecture was originally introduced in the paper <em>Attention is All You Need</em>, it has 2 parts</p>
-<table>
+            <h1 id="What-is-Regularization"><a href="#What-is-Regularization" class="headerlink" title="What is Regularization"></a>What is Regularization</h1><p>Regularization refers to any technique used to prevent overfitting in machine learning models. Overfitting happens when a model performs well on training data but poorly on unseen (test) data because it “memorizes” patterns instead of learning general rules.</p>
+<h1 id="Purpose-of-Regularization"><a href="#Purpose-of-Regularization" class="headerlink" title="Purpose of Regularization"></a>Purpose of Regularization</h1><p>Regularization helps models:</p>
+<ol>
+<li>Generalize better to new data.</li>
+<li>Avoid relying too much on specific features or neurons.</li>
+<li>Learn smoother, more robust representations.</li>
+</ol>
+<h1 id="Regularization-Techniques"><a href="#Regularization-Techniques" class="headerlink" title="Regularization Techniques"></a>Regularization Techniques</h1><table>
 <thead>
 <tr>
-<th align="left">Part</th>
-<th align="left">Purpose</th>
-<th align="left">Example</th>
+<th align="left">Method</th>
+<th align="left">What It Does</th>
 </tr>
 </thead>
 <tbody><tr>
-<td align="left">Encoder</td>
-<td align="left">Reads the input and builds a contextual hidden representation (“understands” the input)</td>
-<td align="left">reads an Chinese sentence</td>
+<td align="left">Dropout</td>
+<td align="left">Randomly zeroes out neurons during training</td>
 </tr>
 <tr>
-<td align="left">Decoder</td>
-<td align="left">Generates output tokens one-by-one, using the both previous outputs (causal attention) and encoder outputs (cross attention)</td>
-<td align="left">outputs an English sentence</td>
+<td align="left">L2 Regularization</td>
+<td align="left">Adds a penalty for large weights (also called weight decay)</td>
+</tr>
+<tr>
+<td align="left">Early Stopping</td>
+<td align="left">Stops training when validation loss stops improving</td>
+</tr>
+<tr>
+<td align="left">Data Augmentation</td>
+<td align="left">Adds variety to training data to avoid memorization</td>
 </tr>
 </tbody></table>
-<h2 id="Decoder-Only-Model"><a href="#Decoder-Only-Model" class="headerlink" title="Decoder-Only Model"></a>Decoder-Only Model</h2><p>A decoder-only model only uses the decoder stack, it learns to predict the next token in a sequence causally (w&#x2F;o looking ahead at future tokens).</p>
-<p>A decoder-only transformers,</p>
-<ol>
-<li>Inputs are fed directly into the decoder – no separate encoder</li>
-<li>Self-attention is causal (masked)<ul>
-<li>A token can only attend to previous tokens, not future ones</li>
-<li>Prevents “cheating” during training and generation</li>
-</ul>
-</li>
-<li>Auto-regressive generation, token by token prediction – each new token depends only on earlier ones</li>
-<li>Training Objective, <strong>Causal Language Modeling (CLM)</strong> – maximize the probability of the next token</li>
-</ol>
-<p>As for today, majority of LLMs are decoder-based model, gpt&#x2F;llama&#x2F;mistral…. Encoder-Decoder examples could be BART series, and used for translation &#x2F; summarization etc</p>
-<h2 id="Why-Decoder-Only"><a href="#Why-Decoder-Only" class="headerlink" title="Why Decoder-Only"></a>Why Decoder-Only</h2><p>With auto-regression, decoder-only model can handel encoder-decoder tasks (translation&#x2F;summarization) pretty well. But that’s not enough, more reasons,</p>
-<ol>
-<li><strong>Simple</strong>, only one block (the decoder) makes the architecture lighter</li>
-<li><strong>Auto-regressive generation</strong>, perfect for open-ended text generation and dialogue, as mentioned above</li>
-<li><strong>Scaling</strong>, easier to parallelize w&#x2F;o worrying about complex encoder-decoder attention patterns</li>
-<li><strong>Unified Interface</strong>, a single sequence concat “prompt” and “response” parts w&#x2F;o special cross attention rules</li>
-</ol>
-<p>In shorts, decoder-only is simpler, faster, and fits LLM pre-training better</p>
-<p>A decoder-only transformer is a neural network architecture that uses only the decoder component of the transformer design, applies causal self-attention, and is trained to predict the next token in an auto-regressive fashion, enabling natural text generation w&#x2F;o a separate encoder.</p>
+<h1 id="Dropout-In-Real-World"><a href="#Dropout-In-Real-World" class="headerlink" title="Dropout In Real World"></a>Dropout In Real World</h1><p>Imagine the learning process is a student taking an exam, dropout is like giving the student slightly incomplete notes every time they study. Over time, they learn the underlying concepts instead of memorizing exact phrases – leaning to better generalization.</p>
+<h1 id="Dropout-Example-In-Transformer-Classifier-Head-Training"><a href="#Dropout-Example-In-Transformer-Classifier-Head-Training" class="headerlink" title="Dropout Example In Transformer Classifier Head Training"></a>Dropout Example In Transformer Classifier Head Training</h1><p>“Add regularization before the final classifier” –&gt; (What does it mean?) –&gt; “Apply dropout or another technique to the features passed to the final classification layer to prevent overfitting and encourage generalization”</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sequence_output = <span class="variable language_">self</span>.dropout(sequence_output)</span><br><span class="line">classifier_logits = <span class="variable language_">self</span>.score(sequence_output)</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h1><p>Adding dropout before the classifier introduces controlled noise, making it harder for the model to memorize patterns – this encourage learning of generalizable features instead.</p>
 
         </div>
 
@@ -278,7 +272,7 @@
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="http://example.com/2025/01/08/decoder-only/">http://example.com/2025/01/08/decoder-only/</a></span>
+                        <span><a href="http://example.com/2025/01/10/Regularization/">http://example.com/2025/01/10/Regularization/</a></span>
                     </p>
                 
                 
@@ -306,10 +300,8 @@
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2025/01/10/Regularization/">NN Regularization - Dropout In Additional Transformer Head</a>
             
-            
-            <a class="next" rel="next" href="/2024/12/21/auto_regressive/">Auto Regressive</a>
+            <a class="next" rel="next" href="/2025/01/08/decoder-only/">Decoder Only</a>
             
         </section>
 
