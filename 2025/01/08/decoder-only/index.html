@@ -222,7 +222,6 @@
         <div class="post-content">
             <p>Origin Transformers = Encoder + Decoder</p>
 <p>When the Transformer model architecture was originally introduced in the paper Attention is All You Need, it has 2 parts</p>
-<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -244,8 +243,8 @@
 </tr>
 </tbody>
 </table>
-</div>
-<h2 id="Decoder-Only-Model"><a href="#Decoder-Only-Model" class="headerlink" title="Decoder-Only Model"></a>Decoder-Only Model</h2><p>A decoder-only model only uses the decoder stack, it learns to predict the next token in a sequence causally (w/o looking ahead at future tokens).</p>
+<h2 id="Decoder-Only-Model">Decoder-Only Model</h2>
+<p>A decoder-only model only uses the decoder stack, it learns to predict the next token in a sequence causally (w/o looking ahead at future tokens).</p>
 <p>A decoder-only transformers,</p>
 <ol>
 <li>Inputs are fed directly into the decoder – no separate encoder</li>
@@ -255,18 +254,20 @@
 <li>A token can only attend to previous tokens, not future ones</li>
 <li>Prevents “cheating” during training and generation</li>
 </ul>
-<ol>
+<ol start="3">
 <li>Auto-regressive generation, token by token prediction – each new token depends only on earlier ones</li>
 <li>Training Objective, <strong>Causal Language Modeling (CLM)</strong> – maximize the probability of the next token</li>
 </ol>
 <p>As for today, majority of LLMs are decoder-based model, gpt/llama/mistral… Encoder-Decoder examples could be BART series, and used for translation / summarization etc</p>
-<h2 id="Why-Decoder-Only"><a href="#Why-Decoder-Only" class="headerlink" title="Why Decoder-Only"></a>Why Decoder-Only</h2><p>With auto-regression, decoder-only model can handel encoder-decoder tasks (translation/summarization) pretty well. But that’s not enough, more reasons,</p>
+<h2 id="Why-Decoder-Only">Why Decoder-Only</h2>
+<p>With auto-regression, decoder-only model can handel encoder-decoder tasks (translation/summarization) pretty well. But that’s not enough, more reasons,</p>
 <ol>
 <li><strong>Simple</strong>, only one block (the decoder) makes the architecture lighter</li>
 <li><strong>Auto-regressive generation</strong>, perfect for open-ended text generation and dialogue, as mentioned above</li>
 <li><strong>Scaling</strong>, easier to parallelize w/o worrying about complex encoder-decoder attention patterns</li>
-<li><strong>Unified Interface</strong>, a single sequence concat “prompt” and “response” parts w/o special cross attention rules<br>In shorts, decoder-only is simpler, faster, and fits LLM pre-training better</li>
+<li><strong>Unified Interface</strong>, a single sequence concat “prompt” and “response” parts w/o special cross attention rules</li>
 </ol>
+<p>In shorts, decoder-only is simpler, faster, and fits LLM pre-training better</p>
 <p>A decoder-only transformer is a neural network architecture that uses only the decoder component of the transformer design, applies causal self-attention, and is trained to predict the next token in an auto-regressive fashion, enabling natural text generation w/o a separate encoder.</p>
 
         </div>
