@@ -220,14 +220,16 @@
         </header>
 
         <div class="post-content">
-            <h3 id="What-is-Regularization"><a href="#What-is-Regularization" class="headerlink" title="What is Regularization"></a>What is Regularization</h3><p>Regularization refers to any technique used to prevent overfitting in machine learning models. Overfitting happens when a model performs well on training data but poorly on unseen (test) data because it “memorizes” patterns instead of learning general rules.</p>
-<h3 id="Purpose-of-Regularization"><a href="#Purpose-of-Regularization" class="headerlink" title="Purpose of Regularization"></a>Purpose of Regularization</h3><p>Regularization helps models:</p>
+            <h3 id="What-is-Regularization">What is Regularization</h3>
+<p>Regularization refers to any technique used to prevent overfitting in machine learning models. Overfitting happens when a model performs well on training data but poorly on unseen (test) data because it “memorizes” patterns instead of learning general rules.</p>
+<h3 id="Purpose-of-Regularization">Purpose of Regularization</h3>
+<p>Regularization helps models:</p>
 <ol>
 <li>Generalize better to new data.</li>
 <li>Avoid relying too much on specific features or neurons.</li>
 <li>Learn smoother, more robust representations.</li>
 </ol>
-<h3 id="Regularization-Techniques"><a href="#Regularization-Techniques" class="headerlink" title="Regularization Techniques"></a>Regularization Techniques</h3><div class="table-container">
+<h3 id="Regularization-Techniques">Regularization Techniques</h3>
 <table>
 <thead>
 <tr>
@@ -254,11 +256,13 @@
 </tr>
 </tbody>
 </table>
-</div>
-<h3 id="Dropout-In-Real-World"><a href="#Dropout-In-Real-World" class="headerlink" title="Dropout In Real World"></a>Dropout In Real World</h3><p>Imagine the learning process is a student taking an exam, dropout is like giving the student slightly incomplete notes every time they study. Over time, they learn the underlying concepts instead of memorizing exact phrases – leaning to better generalization.</p>
-<h3 id="Dropout-Example-In-Transformer-Classifier-Head-Training"><a href="#Dropout-Example-In-Transformer-Classifier-Head-Training" class="headerlink" title="Dropout Example In Transformer Classifier Head Training"></a>Dropout Example In Transformer Classifier Head Training</h3><p>“Add regularization before the final classifier” —&gt; (What does it mean?) —&gt; “Apply dropout or another technique to the features passed to the final classification layer to prevent overfitting and encourage generalization”</p>
+<h3 id="Dropout-In-Real-World">Dropout In Real World</h3>
+<p>Imagine the learning process is a student taking an exam, dropout is like giving the student slightly incomplete notes every time they study. Over time, they learn the underlying concepts instead of memorizing exact phrases – leaning to better generalization.</p>
+<h3 id="Dropout-Example-In-Transformer-Classifier-Head-Training">Dropout Example In Transformer Classifier Head Training</h3>
+<p>“Add regularization before the final classifier” --&gt; (What does it mean?) --&gt; “Apply dropout or another technique to the features passed to the final classification layer to prevent overfitting and encourage generalization”</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sequence_output = <span class="variable language_">self</span>.dropout(sequence_output)</span><br><span class="line">classifier_logits = <span class="variable language_">self</span>.score(sequence_output)</span><br></pre></td></tr></table></figure>
-<h3 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h3><p>Adding dropout before the classifier introduces controlled noise, making it harder for the model to memorize patterns – this encourage learning of generalizable features instead.</p>
+<h3 id="Summary">Summary</h3>
+<p>Adding dropout before the classifier introduces controlled noise, making it harder for the model to memorize patterns – this encourage learning of generalizable features instead.</p>
 
         </div>
 
