@@ -263,17 +263,14 @@
 <p>In comparison, there has been relatively smaller attention given to OSS post-training, where most work has focused narrowly on improving instruction-following behavior.</p>
 <p>That dynamic started to shift with the release of R1, which demonstrated the significant potential of large-scale, RL-driven post-training to meaningfully improve model capabilities. One line from the R1 technical report particularly stood out to me:</p>
 <blockquote>
-<p>“<em><strong>Post-training</strong> can be a powerful lever for <strong>boosting base model performance</strong> while keeping <strong>costs low</strong>.</em>”</p>
+<p>“<em><strong>Post-training</strong> can be a powerful lever for <strong>boosting base model performance</strong> while keeping <strong>costs low</strong>.</em>“</p>
 </blockquote>
 <p>Since I’ll be giving a talk to the team on R1 and GRPO, I wanted to capture a few quick reflections based on what I’ve learned so far.</p>
-<h2 id="Group-Relative-Policy-Optimization-GRPO">Group Relative Policy Optimization (GRPO)</h2>
-<p>Reward modeling is a core component of reinforcement learning (RL), as it defines the optimization direction of the entire process. Based on empirical experience, there are two fundamental principles for designing an effective reward model:</p>
+<h2 id="Group-Relative-Policy-Optimization-GRPO"><a href="#Group-Relative-Policy-Optimization-GRPO" class="headerlink" title="Group Relative Policy Optimization (GRPO)"></a>Group Relative Policy Optimization (GRPO)</h2><p>Reward modeling is a core component of reinforcement learning (RL), as it defines the optimization direction of the entire process. Based on empirical experience, there are two fundamental principles for designing an effective reward model:</p>
 <ol>
-<li>
-<p>Accurately capture your true optimization objective</p>
+<li><p>Accurately capture your true optimization objective</p>
 </li>
-<li>
-<p>Ensure consistency in reward signals</p>
+<li><p>Ensure consistency in reward signals</p>
 </li>
 </ol>
 <p>The first principle can already be challenging — your reward model should provide a strong positive signal for preferred outputs (the “winners”) and a weaker or negative signal for undesirable ones (the “losers”). You can think of this like designing the perspective of an impartial judge or having a “god view” over the task.</p>
@@ -281,35 +278,26 @@
 <p>R1 series training adopts rule-based reward modeling, from it’s paper, two reward training signals,</p>
 <ul>
 <li>Accuracy reward, for math/coding training data</li>
-<li>Format rewards, enforce model to put thinking process between think token &lt;think&gt; … &lt;/think&gt;</li>
+<li>Format rewards, enforce model to put thinking process between think token \<think> .. \</think></li>
 </ul>
 <p>with this, defined a group based advantage as</p>
-<p>$$<br>
-A_i = (r_i - mean({r_1, r_2, …, r_G})) / std({r_1, r_2, …, r_G})<br>
-$$</p>
-<p>and plugged in training objective</p>
-<p>$$<br>
-J_{GRPO}(\theta) = \mathbb{E}{[q \sim P(Q), {o_i}<em>{i=1}^G \sim \pi</em>{\theta_{old}}(Q|q)]} \left[ \frac{1}{G} \sum_{i=1}^{G} \left( \min \left( \frac{\pi_\theta(o_i|q)}{\pi_{\theta_{old}}(o_i|q)} A_i, \text{clip} \left( \frac{\pi_\theta(o_i|q)}{\pi_{\theta_{old}}(o_i|q)}, 1-\varepsilon, 1+\varepsilon \right) A_i \right) - \beta \mathbb{D}<em>{KL}(\pi</em>\theta || \pi_{ref}) \right) \right]<br>
-$$</p>
-<p>where $r_i$ is the reward of output $o_i$. Intuitively, the GRPO update is comparing multiple answers to a single question within a batch. The model learns to become more like the answer marked as correct and less like the others. This is a very simple way to compare the advantage, which is the measure of how much better a specific action is than the average at a given state. Compared to PPO or generic RLs, GRPO can run wth a far higher number of samples per question/prompt.</p>
-<p><img src="../../image/r1/ppo_grpo.png" alt="ppo_grpo"><br>
-<em>Diagram Ref <a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2402.03300">https://arxiv.org/pdf/2402.03300</a></em></p>
+<script type="math/tex; mode=display">
+A_i = (r_i - mean({r_1, r_2, ..., r_G})) / std({r_1, r_2, ..., r_G})</script><p>and plugged in training objective</p>
+<script type="math/tex; mode=display">
+J_{GRPO}(\theta) = \mathbb{E}{[q \sim P(Q), \{o_i\}_{i=1}^G \sim \pi_{\theta_{old}}(Q|q)]} \left[ \frac{1}{G} \sum_{i=1}^{G} \left( \min \left( \frac{\pi_\theta(o_i|q)}{\pi_{\theta_{old}}(o_i|q)} A_i, \text{clip} \left( \frac{\pi_\theta(o_i|q)}{\pi_{\theta_{old}}(o_i|q)}, 1-\varepsilon, 1+\varepsilon \right) A_i \right) - \beta \mathbb{D}_{KL}(\pi_\theta || \pi_{ref}) \right) \right]</script><p>where $r_i$ is the reward of output $o_i$. Intuitively, the GRPO update is comparing multiple answers to a single question within a batch. The model learns to become more like the answer marked as correct and less like the others. This is a very simple way to compare the advantage, which is the measure of how much better a specific action is than the average at a given state. Compared to PPO or generic RLs, GRPO can run wth a far higher number of samples per question/prompt.</p>
+<p><img src="ppo_grpo.png" alt="ppo_grpo"><br><em>Diagram Ref <a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2402.03300">https://arxiv.org/pdf/2402.03300</a></em></p>
 <p>Compared with PPO, it avoids learning value model which significant improved training efficiency and maintained a relatively clear/deterministic learning signal, specific</p>
 <ol>
 <li>Training a good value model is challenging, where research hasn’t established best practice</li>
 <li>Reduced memory and compute resource due to remove value model</li>
 </ol>
-<h2 id="Mandating-Reflective-Reasoning">Mandating Reflective Reasoning</h2>
-<p>For each question, requiring / enforcing a process where a model explicitly works through its thought process or reasoning steps before arriving at the final answer</p>
-<p><img src="../../image/r1/think_prompt.png" alt="think_token"><br>
-<em>Ref:<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2501.12948">https://arxiv.org/pdf/2501.12948</a></em></p>
-<p>intuitively, with this think token, the completion of the model is trending longer along training steps. Behaviors such as <strong>reflection</strong> – where the model revisits the reevaluates its previous steps – and the exploration of alternative approaches to problem-solving arise spontaneously. <strong>These behaviors are not explicitly programmed but instead emerge as a result of the model's interaction with the reinforcement learning environment</strong>.</p>
-<p><img src="../../image/r1/r1_perf_png.png" alt="perf"><br>
-<em>Ref:<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2501.12948">https://arxiv.org/pdf/2501.12948</a></em></p>
+<h2 id="Mandating-Reflective-Reasoning"><a href="#Mandating-Reflective-Reasoning" class="headerlink" title="Mandating Reflective Reasoning"></a>Mandating Reflective Reasoning</h2><p>For each question, requiring / enforcing a process where a model explicitly works through its thought process or reasoning steps before arriving at the final answer</p>
+<p><img src="think_prompt.png" alt="think_token"><br><em>Ref:<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2501.12948">https://arxiv.org/pdf/2501.12948</a></em></p>
+<p>intuitively, with this think token, the completion of the model is trending longer along training steps. Behaviors such as <strong>reflection</strong> — where the model revisits the reevaluates its previous steps — and the exploration of alternative approaches to problem-solving arise spontaneously. <strong>These behaviors are not explicitly programmed but instead emerge as a result of the model\’s interaction with the reinforcement learning environment</strong>. </p>
+<p><img src="r1_perf_png.png" alt="perf"><br><em>Ref:<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2501.12948">https://arxiv.org/pdf/2501.12948</a></em></p>
 <p>This spontaneous development significantly enhances Deepseek-R1-Zero’s reasoning capabilities, enabling it to tackle more challenging tasks with greater efficiency and accuracy.</p>
-<h2 id="Deepseek-R1-RL-with-Cold-Start">Deepseek-R1: RL with Cold Start</h2>
-<p>Objective: enhance reasoning performance and readability by incorporating a small amount of high-quality <strong>cold-start data</strong></p>
-<img src="../../image/r1/r1_zero_vs_r1.png" alt="r1_zero_vs_r1" width="70%">
+<h2 id="Deepseek-R1-RL-with-Cold-Start"><a href="#Deepseek-R1-RL-with-Cold-Start" class="headerlink" title="Deepseek-R1: RL with Cold Start"></a>Deepseek-R1: RL with Cold Start</h2><p>Objective: enhance reasoning performance and readability by incorporating a small amount of high-quality <strong>cold-start data</strong></p>
+<p><img src="../../image/r1/r1_zero_vs_r1.png" alt="r1_zero_vs_r1" width="70%"></p>
 <p>I summarized this R1 workflow to demonstrate the training pipeline, blue rectangle stands for model checkpoint, the cylinder means dataset.</p>
 <p>SFT (cold start data) -&gt; RL (GRPO: rule-based + consistency reward) -&gt; SFT (more diverse sft training data including both reasoning and none-reasoning) -&gt; RL (GRPO: rule-based + preference reward)</p>
 <p>Most of the components are pretty clear demnstrated in below diagram, one thing to explicitly mention is the second stage SFT data - it utilize the first RL convergence checkpoint to collect high-quality reasoning and non-reasoning data through <strong>rejection sampling</strong>,</p>
@@ -317,14 +305,12 @@ $$</p>
 <li>Reasoning data: 600k, filtered out CoT with mixed languages, long paragraphs and code blocks</li>
 <li>Non-reasoning data: 200k, a combination of subset of deepseek-v3 sft data plus CoT prompting data from deepseek-v3 sft(?) checkpoint, including writing, role-playing, factual QA, self-cognition and translation.</li>
 </ul>
-<p><img src="../../image/r1/r1_workflow.png" alt="r1_workflow"></p>
+<p><img src="r1_workflow.png" alt="r1_workflow"></p>
 <p>More experiments are not listed this post, feel free to refer original technique paper.</p>
-<h2 id="Thoughts-and-Summarization">Thoughts and Summarization</h2>
-<p><strong>Data, Data, Data</strong></p>
+<h2 id="Thoughts-and-Summarization"><a href="#Thoughts-and-Summarization" class="headerlink" title="Thoughts and Summarization"></a>Thoughts and Summarization</h2><p><strong>Data, Data, Data</strong></p>
 <p><strong>High-quality training data</strong> at scale is fundamental to effective post-training. Many contemporary post-training techniques fundamentally aim to enhance data quality: distillation methods (both data and logit distillation) generate superior responses for learning, while rejection sampling fine-tunes models on their own high-quality outputs. Both approaches effectively enhance model performance.</p>
-<p>Besides data quality, <strong>data diversity</strong> is also important. It helps to prevent overfiting and improve model generalization. It directly contributes the performance gap between in-distribution(ID) vs out-of-distribution(OOD) task performance. Good OOD performance indicates the model has learned generalizable patterns, not just memorized training data. Especially important in RL phase, one related work – <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2501.17161">SFT Memorizes, RL Generalizes: A Comparative Study of Foundation Model Post-training</a></p>
-<h2 id="Disclaimer">Disclaimer</h2>
-<p>This post is intended solely for personal study and learning purposes. Feedback and corrections are welcome if you find any inaccuracies. The content does not represent the views of, nor disclose any research methods from, any company or research organization.</p>
+<p>Besides data quality, <strong>data diversity</strong> is also important. It helps to prevent overfiting and improve model generalization. It directly contributes the performance gap between in-distribution(ID) vs out-of-distribution(OOD) task performance. Good OOD performance indicates the model has learned generalizable patterns, not just memorized training data. Especially important in RL phase, one related work — <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2501.17161">SFT Memorizes, RL Generalizes: A Comparative Study of Foundation Model Post-training</a></p>
+<h2 id="Disclaimer"><a href="#Disclaimer" class="headerlink" title="Disclaimer"></a>Disclaimer</h2><p>This post is intended solely for personal study and learning purposes. Feedback and corrections are welcome if you find any inaccuracies. The content does not represent the views of, nor disclose any research methods from, any company or research organization.</p>
 
         </div>
 
@@ -339,7 +325,7 @@ $$</p>
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="http://example.com/2025/02/02/Deepseek-R1-and-GRPO/">http://example.com/2025/02/02/Deepseek-R1-and-GRPO/</a></span>
+                        <span><a href="https://arriettyc.github.io/2025/02/02/grpo_r1/">https://arriettyc.github.io/2025/02/02/grpo_r1/</a></span>
                     </p>
                 
                 
@@ -368,7 +354,7 @@ $$</p>
         <section class="post-nav">
             
             
-            <a class="next" rel="next" href="/2025/01/10/Regularization/">NN Regularization - Dropout In Additional Transformer Head</a>
+            <a class="next" rel="next" href="/2025/01/10/nn-regularization/">NN Regularization -- Dropout in Additional Transformer Head</a>
             
         </section>
 

@@ -13,7 +13,7 @@
 
 
 
-<title>Auto Regressive | Xin&#39;s Blog</title>
+<title>NN Regularization -- Dropout in Additional Transformer Head | Xin&#39;s Blog</title>
 
 
 
@@ -202,7 +202,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">Auto Regressive</h1>
+            <h1 class="post-title">NN Regularization -- Dropout in Additional Transformer Head</h1>
             
                 <div class="post-meta">
                     
@@ -211,7 +211,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">December 21, 2024&nbsp;&nbsp;23:03:00</a>
+                        Date: <a href="#">January 10, 2025&nbsp;&nbsp;21:48:42</a>
                         </span>
                     
                     
@@ -220,80 +220,45 @@
         </header>
 
         <div class="post-content">
-            <p>An Auto-Regressive (AR) model is a type of statistical model used in time series analysis to describe how the current value of a time series depends on its previous values (i.e. its own historical data).</p>
-<p>The term “auto-regressive” means that the model regresses the current value of the series on its own past value. It’s commonly used for forecasting and understanding the dynamics of time series data.</p>
-<h3 id="Key-Concept">Key Concept</h3>
-<p>The AR model assumes that the current value $X_t$ of a time series in a linear combination of its previous values and a random error term.</p>
-<h3 id="Mathematical-Representation">Mathematical Representation</h3>
-<p>A $p-order$ auto-regressive model $AR(p)$ is a linear formula of,</p>
-<p>$$<br>
-X_t = c + \phi_1X_{t-1} + \phi_2X_{t-2} + … + \phi_pX_{t-p} + \epsilon_t<br>
-$$</p>
-<p>where</p>
-<ul>
-<li>$X_t$: the value at time t</li>
-<li>$c$: a constant term</li>
-<li>$\phi_1, \phi_2,…,\phi_p$: coefficients of the model representing the weights of past values</li>
-<li>$p$: the number of past time steps or lagged terms that the model uses to predict the current value, order of the AR model</li>
-<li>$\epsilon_t$: a random error term (white noise), assumed to have a mean of 0 and constant variance</li>
-</ul>
-<h4 id="First-order-AR-Model-and-Dynamic-Programming">First-order AR Model and Dynamic Programming</h4>
-<p>A first order AR model $AR(1)$,<br>
-$$<br>
-X_t = c + \phi_1X_{t-1} + \epsilon_t<br>
-$$<br>
-The current value $X_t$ is determined by:</p>
-<ul>
-<li>A constant term $c$</li>
-<li>A weighted contribution from the previous value $X_{t-1}$</li>
-<li>A random noise term $\epsilon_t$</li>
-</ul>
-<p>This formula looks very close to a type of programming problems - dynamic programming - they both derive the current value based on previous state, but AR is more focus on prediction, DP is more focus on most optimized solution.</p>
-<h4 id="The-Order-in-AR-model">The Order in AR model</h4>
-<p>In an $AR(p)$ model, the order $p$ specifies how many prior time steps $X_{t-1},X_{t-2},…,X_{t-p}$ are included in the model to predict $X_t$,</p>
-<ul>
-<li>A higher-order model can capture more complex dependencies on the past values of the series</li>
-<li>The choice of $p$ depends on the data and the structure of the time series</li>
-</ul>
+            <h3 id="What-is-Regularization"><a href="#What-is-Regularization" class="headerlink" title="What is Regularization"></a>What is Regularization</h3><p>Regularization refers to any technique used to prevent overfitting in machine learning models. Overfitting happens when a model performs well on training data but poorly on unseen (test) data because it “memorizes” patterns instead of learning general rules.</p>
+<h3 id="Purpose-of-Regularization"><a href="#Purpose-of-Regularization" class="headerlink" title="Purpose of Regularization"></a>Purpose of Regularization</h3><p>Regularization helps models:</p>
 <ol>
-<li>Determination the Order $P$</li>
+<li>Generalize better to new data.</li>
+<li>Avoid relying too much on specific features or neurons.</li>
+<li>Learn smoother, more robust representations.</li>
 </ol>
-<ul>
-<li>Partial Auto-correlation Function (PACF): identifies significant lags to include</li>
-<li>Model Selection Criteria: such as AIC(Akaike Information Criterion) or BIC(Bayesian Information Criterion) to find the optimal $p$ that balances complexity and accuracy</li>
-</ul>
-<ol start="2">
-<li>Trade-off</li>
-</ol>
-<ul>
-<li>A higher order increase model complexity and can lead to overfitting if the order is too high for the data</li>
-<li>A lower order might miss important temporal dependencies</li>
-</ul>
-<p>The order in $AR(p)$ models defines the “memory” of the model - how far back in time the model looks to predict the current value. It controls the number of lagged terms $X_{t-1}, X_{t-2}, …,X_{t-p}$ used in the regression.</p>
-<h3 id="Features">Features</h3>
-<ol>
-<li>Stationarity (稳定性)</li>
-</ol>
-<ul>
-<li>AR models are typically applied to stationary time series, where the mean and variance do not change over time.</li>
-<li>For an $AR(1)$ model, stationarity requires $|\phi_1| &lt; 1$</li>
-</ul>
-<ol start="2">
-<li>Autocorrelation (自相关性)</li>
-</ol>
-<ul>
-<li>The values of the series are correlated with their past values</li>
-<li>Tools like the auto-correlation function (ACF) and partial auto-correlation function (PACF) are used to identify and fit AR models</li>
-</ul>
-<h3 id="Relationship-to-Deep-Learning">Relationship to Deep Learning</h3>
-<p>The concept of auto-regression is widely used in deep learning, especially in sequence models,</p>
-<ol>
-<li>Recurrent Neural Networks (RNNs): used a similar idea to predict the next step in a sequence based on past values.</li>
-<li>Transformers: auto-regressive structures are used in models like GPT to generate text sequentially, where each token depends on the previously generated tokens.</li>
-<li>Auto-regressive Language Models: predict the probability of the current word based on the previous sequence of words</li>
-</ol>
-<h3 id="Summary">Summary</h3>
-<p>The AR model is a fundamental concept in time series analysis, providing a simple and effective way to model the relationships between past and present values of a series. It is a key tool in both traditional statistics and modern machine learning approaches for sequence modeling.</p>
+<h3 id="Regularization-Techniques"><a href="#Regularization-Techniques" class="headerlink" title="Regularization Techniques"></a>Regularization Techniques</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>What It Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dropout</td>
+<td>Randomly zeroes out neurons during training</td>
+</tr>
+<tr>
+<td>L2 Regularization</td>
+<td>Adds a penalty for large weights (also called weight decay)</td>
+</tr>
+<tr>
+<td>Early Stopping</td>
+<td>Stops training when validation loss stops improving</td>
+</tr>
+<tr>
+<td>Data Augmentation</td>
+<td>Adds variety to training data to avoid memorization</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="Dropout-In-Real-World"><a href="#Dropout-In-Real-World" class="headerlink" title="Dropout In Real World"></a>Dropout In Real World</h3><p>Imagine the learning process is a student taking an exam, dropout is like giving the student slightly incomplete notes every time they study. Over time, they learn the underlying concepts instead of memorizing exact phrases – leaning to better generalization.</p>
+<h3 id="Dropout-Example-In-Transformer-Classifier-Head-Training"><a href="#Dropout-Example-In-Transformer-Classifier-Head-Training" class="headerlink" title="Dropout Example In Transformer Classifier Head Training"></a>Dropout Example In Transformer Classifier Head Training</h3><p>“Add regularization before the final classifier” —&gt; (What does it mean?) —&gt; “Apply dropout or another technique to the features passed to the final classification layer to prevent overfitting and encourage generalization”</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sequence_output = <span class="variable language_">self</span>.dropout(sequence_output)</span><br><span class="line">classifier_logits = <span class="variable language_">self</span>.score(sequence_output)</span><br></pre></td></tr></table></figure>
+<h3 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h3><p>Adding dropout before the classifier introduces controlled noise, making it harder for the model to memorize patterns – this encourage learning of generalizable features instead.</p>
 
         </div>
 
@@ -308,7 +273,7 @@ The current value $X_t$ is determined by:</p>
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="http://example.com/2024/12/21/auto_regressive/">http://example.com/2024/12/21/auto_regressive/</a></span>
+                        <span><a href="https://arriettyc.github.io/2025/01/10/nn-regularization/">https://arriettyc.github.io/2025/01/10/nn-regularization/</a></span>
                     </p>
                 
                 
@@ -326,10 +291,6 @@ The current value $X_t$ is determined by:</p>
                 <span>Tag(s):</span>
                 <span class="tag">
                     
-                    
-                        <a href="/tags/AutoRegressive/"># AutoRegressive</a>
-                    
-                        
                 </span>
             </div>
             <div>
@@ -340,10 +301,10 @@ The current value $X_t$ is determined by:</p>
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2025/01/08/decoder-only/">Decoder Only</a>
+                <a class="prev" rel="prev" href="/2025/02/02/grpo_r1/">Deepseek GRPO and R1</a>
             
             
-            <a class="next" rel="next" href="/2024/12/13/From-stochastic-to-deterministic-with-MiniMax-Entropy/">From stochastic to deterministic with Minimize Entropy</a>
+            <a class="next" rel="next" href="/2025/01/08/Decoder-Only/">Decoder Only</a>
             
         </section>
 
