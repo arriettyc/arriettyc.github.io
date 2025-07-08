@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Xin">
+
+
+
+
+
+<title>Auto Regressive | Xin&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/image/avatar.png">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const pagebody = document.getElementsByTagName('body')[0]
+
+            function setTheme(status) {
+
+                if (status === 'dark') {
+                    window.sessionStorage.theme = 'dark'
+                    pagebody.classList.add('dark-theme');
+
+                } else if (status === 'light') {
+                    window.sessionStorage.theme = 'light'
+                    pagebody.classList.remove('dark-theme');
+                }
+            };
+
+            setTheme(window.sessionStorage.theme)
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">知りたいままに | Xin&#39;s Notebook</a></div>
+            <div class="menu navbar-right">
+                
+                <a class="menu-item" href="/archives">Posts</a>
+                
+                <a class="menu-item" href="/category">Categories</a>
+                
+                <a class="menu-item" href="/tag">Tags</a>
+                
+                <a class="menu-item" href="/about">About</a>
+                
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">知りたいままに | Xin&#39;s Notebook</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">
+                    <svg class="menu-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M4.5 17.27q-.213 0-.356-.145T4 16.768t.144-.356t.356-.143h15q.213 0 .356.144q.144.144.144.357t-.144.356t-.356.143zm0-4.77q-.213 0-.356-.144T4 11.999t.144-.356t.356-.143h15q.213 0 .356.144t.144.357t-.144.356t-.356.143zm0-4.77q-.213 0-.356-.143Q4 7.443 4 7.23t.144-.356t.356-.143h15q.213 0 .356.144T20 7.23t-.144.356t-.356.144z"/></svg>
+                    <svg class="close-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Material Symbols Light by Google - https://github.com/google/material-design-icons/blob/master/LICENSE --><path fill="currentColor" d="m12 12.708l-5.246 5.246q-.14.14-.344.15t-.364-.15t-.16-.354t.16-.354L11.292 12L6.046 6.754q-.14-.14-.15-.344t.15-.364t.354-.16t.354.16L12 11.292l5.246-5.246q.14-.14.345-.15q.203-.01.363.15t.16.354t-.16.354L12.708 12l5.246 5.246q.14.14.15.345q.01.203-.15.363t-.354.16t-.354-.16z"/></svg>
+                </div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                <a class="menu-item" href="/archives">Posts</a>
+                
+                <a class="menu-item" href="/category">Categories</a>
+                
+                <a class="menu-item" href="/tag">Tags</a>
+                
+                <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if (toggleMenu.classList.contains("active")) {
+            toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        } else {
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Auto Regressive</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Xin</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">December 21, 2024&nbsp;&nbsp;23:03:00</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>An Auto-Regressive (AR) model is a type of statistical model used in time series analysis to describe how the current value of a time series depends on its previous values (i.e. its own historical data).</p>
+<p>The term “auto-regressive” means that the model regresses the current value of the series on its own past value. It’s commonly used for forecasting and understanding the dynamics of time series data.</p>
+<h3 id="Key-Concept">Key Concept</h3>
+<p>The AR model assumes that the current value $X_t$ of a time series in a linear combination of its previous values and a random error term.</p>
+<h3 id="Mathematical-Representation">Mathematical Representation</h3>
+<p>A $p-order$ auto-regressive model $AR(p)$ is a linear formula of,</p>
+<p>$$<br>
+X_t = c + \phi_1X_{t-1} + \phi_2X_{t-2} + … + \phi_pX_{t-p} + \epsilon_t<br>
+$$</p>
+<p>where</p>
+<ul>
+<li>$X_t$: the value at time t</li>
+<li>$c$: a constant term</li>
+<li>$\phi_1, \phi_2,…,\phi_p$: coefficients of the model representing the weights of past values</li>
+<li>$p$: the number of past time steps or lagged terms that the model uses to predict the current value, order of the AR model</li>
+<li>$\epsilon_t$: a random error term (white noise), assumed to have a mean of 0 and constant variance</li>
+</ul>
+<h4 id="First-order-AR-Model-and-Dynamic-Programming">First-order AR Model and Dynamic Programming</h4>
+<p>A first order AR model $AR(1)$,<br>
+$$<br>
+X_t = c + \phi_1X_{t-1} + \epsilon_t<br>
+$$<br>
+The current value $X_t$ is determined by:</p>
+<ul>
+<li>A constant term $c$</li>
+<li>A weighted contribution from the previous value $X_{t-1}$</li>
+<li>A random noise term $\epsilon_t$</li>
+</ul>
+<p>This formula looks very close to a type of programming problems - dynamic programming - they both derive the current value based on previous state, but AR is more focus on prediction, DP is more focus on most optimized solution.</p>
+<h4 id="The-Order-in-AR-model">The Order in AR model</h4>
+<p>In an $AR(p)$ model, the order $p$ specifies how many prior time steps $X_{t-1},X_{t-2},…,X_{t-p}$ are included in the model to predict $X_t$,</p>
+<ul>
+<li>A higher-order model can capture more complex dependencies on the past values of the series</li>
+<li>The choice of $p$ depends on the data and the structure of the time series</li>
+</ul>
+<ol>
+<li>Determination the Order $P$</li>
+</ol>
+<ul>
+<li>Partial Auto-correlation Function (PACF): identifies significant lags to include</li>
+<li>Model Selection Criteria: such as AIC(Akaike Information Criterion) or BIC(Bayesian Information Criterion) to find the optimal $p$ that balances complexity and accuracy</li>
+</ul>
+<ol start="2">
+<li>Trade-off</li>
+</ol>
+<ul>
+<li>A higher order increase model complexity and can lead to overfitting if the order is too high for the data</li>
+<li>A lower order might miss important temporal dependencies</li>
+</ul>
+<p>The order in $AR(p)$ models defines the “memory” of the model - how far back in time the model looks to predict the current value. It controls the number of lagged terms $X_{t-1}, X_{t-2}, …,X_{t-p}$ used in the regression.</p>
+<h3 id="Features">Features</h3>
+<ol>
+<li>Stationarity (稳定性)</li>
+</ol>
+<ul>
+<li>AR models are typically applied to stationary time series, where the mean and variance do not change over time.</li>
+<li>For an $AR(1)$ model, stationarity requires $|\phi_1| &lt; 1$</li>
+</ul>
+<ol start="2">
+<li>Autocorrelation (自相关性)</li>
+</ol>
+<ul>
+<li>The values of the series are correlated with their past values</li>
+<li>Tools like the auto-correlation function (ACF) and partial auto-correlation function (PACF) are used to identify and fit AR models</li>
+</ul>
+<h3 id="Relationship-to-Deep-Learning">Relationship to Deep Learning</h3>
+<p>The concept of auto-regression is widely used in deep learning, especially in sequence models,</p>
+<ol>
+<li>Recurrent Neural Networks (RNNs): used a similar idea to predict the next step in a sequence based on past values.</li>
+<li>Transformers: auto-regressive structures are used in models like GPT to generate text sequentially, where each token depends on the previously generated tokens.</li>
+<li>Auto-regressive Language Models: predict the probability of the current word based on the previous sequence of words</li>
+</ol>
+<h3 id="Summary">Summary</h3>
+<p>The AR model is a fundamental concept in time series analysis, providing a simple and effective way to model the relationships between past and present values of a series. It is a key tool in both traditional statistics and modern machine learning approaches for sequence modeling.</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Xin</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2024/12/21/auto_regressive/">http://example.com/2024/12/21/auto_regressive/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/AutoRegressive/"># AutoRegressive</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2025/01/08/decoder-only/">Decoder Only</a>
+            
+            
+            <a class="next" rel="next" href="/2024/12/13/From-stochastic-to-deterministic-with-MiniMax-Entropy/">From stochastic to deterministic with Minimize Entropy</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Xin | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

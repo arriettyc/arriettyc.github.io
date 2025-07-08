@@ -13,7 +13,7 @@
 
 
 
-<title>Hello World | Xin&#39;s Blog</title>
+<title>Decoder Only | Xin&#39;s Blog</title>
 
 
 
@@ -43,25 +43,27 @@
         
     
 
-
 <meta name="generator" content="Hexo 7.3.0"></head>
 
 <body>
     <script>
         // this function is used to check current theme before page loaded.
         (() => {
-            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
-            const isDark = currentTheme === 'dark';
             const pagebody = document.getElementsByTagName('body')[0]
-            if (isDark) {
-                pagebody.classList.add('dark-theme');
-                // mobile
-                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
-            } else {
-                pagebody.classList.remove('dark-theme');
-                // mobile
-                document.getElementById("mobile-toggle-theme").innerText = "· Light"
-            }
+
+            function setTheme(status) {
+
+                if (status === 'dark') {
+                    window.sessionStorage.theme = 'dark'
+                    pagebody.classList.add('dark-theme');
+
+                } else if (status === 'light') {
+                    window.sessionStorage.theme = 'light'
+                    pagebody.classList.remove('dark-theme');
+                }
+            };
+
+            setTheme(window.sessionStorage.theme)
         })();
     </script>
 
@@ -69,16 +71,17 @@
         <header>
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-header header-logo"><a href="/">楽しんでね | Xin&#39;s Notebook</a></div>
+            <div class="navbar-header header-logo"><a href="/">知りたいままに | Xin&#39;s Notebook</a></div>
             <div class="menu navbar-right">
                 
-                    <a class="menu-item" href="/archives">Posts</a>
+                <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/category">Categories</a>
+                <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/tag">Tags</a>
+                <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/about">About</a>
+                <a class="menu-item" href="/about">About</a>
+                
                 
                 <input id="switch_default" type="checkbox" class="switch_default">
                 <label for="switch_default" class="toggleBtn"></label>
@@ -91,19 +94,22 @@
         <div class="container">
             <div class="navbar-header">
                 <div>
-                    <a href="/">楽しんでね | Xin&#39;s Notebook</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    <a href="/">知りたいままに | Xin&#39;s Notebook</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
                 </div>
-                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+                <div class="menu-toggle" onclick="mobileBtn()">
+                    <svg class="menu-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M4.5 17.27q-.213 0-.356-.145T4 16.768t.144-.356t.356-.143h15q.213 0 .356.144q.144.144.144.357t-.144.356t-.356.143zm0-4.77q-.213 0-.356-.144T4 11.999t.144-.356t.356-.143h15q.213 0 .356.144t.144.357t-.144.356t-.356.143zm0-4.77q-.213 0-.356-.143Q4 7.443 4 7.23t.144-.356t.356-.143h15q.213 0 .356.144T20 7.23t-.144.356t-.356.144z"/></svg>
+                    <svg class="close-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Material Symbols Light by Google - https://github.com/google/material-design-icons/blob/master/LICENSE --><path fill="currentColor" d="m12 12.708l-5.246 5.246q-.14.14-.344.15t-.364-.15t-.16-.354t.16-.354L11.292 12L6.046 6.754q-.14-.14-.15-.344t.15-.364t.354-.16t.354.16L12 11.292l5.246-5.246q.14-.14.345-.15q.203-.01.363.15t.16.354t-.16.354L12.708 12l5.246 5.246q.14.14.15.345q.01.203-.15.363t-.354.16t-.354-.16z"/></svg>
+                </div>
             </div>
             <div class="menu" id="mobile-menu">
                 
-                    <a class="menu-item" href="/archives">Posts</a>
+                <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/category">Categories</a>
+                <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/tag">Tags</a>
+                <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/about">About</a>
+                <a class="menu-item" href="/about">About</a>
                 
             </div>
         </div>
@@ -114,10 +120,10 @@
     var mobileBtn = function f() {
         var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
         var mobileMenu = document.getElementById("mobile-menu");
-        if(toggleMenu.classList.contains("active")){
-           toggleMenu.classList.remove("active")
+        if (toggleMenu.classList.contains("active")) {
+            toggleMenu.classList.remove("active")
             mobileMenu.classList.remove("active")
-        }else{
+        } else {
             toggleMenu.classList.add("active")
             mobileMenu.classList.add("active")
         }
@@ -196,7 +202,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">Hello World</h1>
+            <h1 class="post-title">Decoder Only</h1>
             
                 <div class="post-meta">
                     
@@ -205,7 +211,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">November 23, 2024&nbsp;&nbsp;23:18:22</a>
+                        Date: <a href="#">January 8, 2025&nbsp;&nbsp;0:00:00</a>
                         </span>
                     
                     
@@ -214,19 +220,54 @@
         </header>
 
         <div class="post-content">
-            <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+            <p>Origin Transformers = Encoder + Decoder</p>
+<p>When the Transformer model architecture was originally introduced in the paper <em>Attention is All You Need</em>, it has 2 parts</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Part</th>
+<th style="text-align:left">Purpose</th>
+<th style="text-align:left">Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Encoder</td>
+<td style="text-align:left">Reads the input and builds a contextual hidden representation (“understands” the input)</td>
+<td style="text-align:left">reads an Chinese sentence</td>
+</tr>
+<tr>
+<td style="text-align:left">Decoder</td>
+<td style="text-align:left">Generates output tokens one-by-one, using the both previous outputs (causal attention) and encoder outputs (cross attention)</td>
+<td style="text-align:left">outputs an English sentence</td>
+</tr>
+</tbody>
+</table>
+<h2 id="Decoder-Only-Model">Decoder-Only Model</h2>
+<p>A decoder-only model only uses the decoder stack, it learns to predict the next token in a sequence causally (w/o looking ahead at future tokens).</p>
+<p>A decoder-only transformers,</p>
+<ol>
+<li>Inputs are fed directly into the decoder – no separate encoder</li>
+<li>Self-attention is causal (masked)
+<ul>
+<li>A token can only attend to previous tokens, not future ones</li>
+<li>Prevents “cheating” during training and generation</li>
+</ul>
+</li>
+<li>Auto-regressive generation, token by token prediction – each new token depends only on earlier ones</li>
+<li>Training Objective, <strong>Causal Language Modeling (CLM)</strong> – maximize the probability of the next token</li>
+</ol>
+<p>As for today, majority of LLMs are decoder-based model, gpt/llama/mistral… Encoder-Decoder examples could be BART series, and used for translation / summarization etc</p>
+<h2 id="Why-Decoder-Only">Why Decoder-Only</h2>
+<p>With auto-regression, decoder-only model can handel encoder-decoder tasks (translation/summarization) pretty well. But that’s not enough, more reasons,</p>
+<ol>
+<li><strong>Simple</strong>, only one block (the decoder) makes the architecture lighter</li>
+<li><strong>Auto-regressive generation</strong>, perfect for open-ended text generation and dialogue, as mentioned above</li>
+<li><strong>Scaling</strong>, easier to parallelize w/o worrying about complex encoder-decoder attention patterns</li>
+<li><strong>Unified Interface</strong>, a single sequence concat “prompt” and “response” parts w/o special cross attention rules</li>
+</ol>
+<p>In shorts, decoder-only is simpler, faster, and fits LLM pre-training better</p>
+<p>A decoder-only transformer is a neural network architecture that uses only the decoder component of the transformer design, applies causal self-attention, and is trained to predict the next token in an auto-regressive fashion, enabling natural text generation w/o a separate encoder.</p>
 
         </div>
 
@@ -241,7 +282,7 @@
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="http://example.com/2024/11/23/hello-world/">http://example.com/2024/11/23/hello-world/</a></span>
+                        <span><a href="http://example.com/2025/01/08/decoder-only/">http://example.com/2025/01/08/decoder-only/</a></span>
                     </p>
                 
                 
@@ -250,11 +291,6 @@
                         <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
                     </p>
                 
-                
-                     <p class="copyright-item">
-                         <span>Slogan:</span>
-                         <span>Do you believe in <strong>DESTINY</strong>?</span>
-                     </p>
                 
 
             </section>
@@ -274,6 +310,10 @@
         </section>
         <section class="post-nav">
             
+                <a class="prev" rel="prev" href="/2025/01/10/Regularization/">NN Regularization - Dropout In Additional Transformer Head</a>
+            
+            
+            <a class="next" rel="next" href="/2024/12/21/auto_regressive/">Auto Regressive</a>
             
         </section>
 
