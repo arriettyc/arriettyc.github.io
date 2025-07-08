@@ -43,7 +43,6 @@
         
     
 
-
 <meta name="generator" content="Hexo 7.3.0"></head>
 
 <body>
@@ -223,25 +222,35 @@
         <div class="post-content">
             <p>An Auto-Regressive (AR) model is a type of statistical model used in time series analysis to describe how the current value of a time series depends on its previous values (i.e. its own historical data).</p>
 <p>The term “auto-regressive” means that the model regresses the current value of the series on its own past value. It’s commonly used for forecasting and understanding the dynamics of time series data.</p>
-<h3 id="Key-Concept"><a href="#Key-Concept" class="headerlink" title="Key Concept"></a>Key Concept</h3><p>The AR model assumes that the current value $X_t$ of a time series in a linear combination of its previous values and a random error term.</p>
-<h3 id="Mathematical-Representation"><a href="#Mathematical-Representation" class="headerlink" title="Mathematical Representation"></a>Mathematical Representation</h3><p>A $p-order$ auto-regressive model $AR(p)$ is a linear formula of,</p>
-<p>$$<br>X_t &#x3D; c + \phi_1X_{t-1} + \phi_2X_{t-2} + … + \phi_pX_{t-p} + \epsilon_t<br>$$</p>
+<h3 id="Key-Concept">Key Concept</h3>
+<p>The AR model assumes that the current value $X_t$ of a time series in a linear combination of its previous values and a random error term.</p>
+<h3 id="Mathematical-Representation">Mathematical Representation</h3>
+<p>A $p-order$ auto-regressive model $AR(p)$ is a linear formula of,</p>
+<p>$$<br>
+X_t = c + \phi_1X_{t-1} + \phi_2X_{t-2} + … + \phi_pX_{t-p} + \epsilon_t<br>
+$$</p>
 <p>where</p>
 <ul>
 <li>$X_t$: the value at time t</li>
 <li>$c$: a constant term</li>
-<li>$\phi_1, \phi_2,..,\phi_p$: coefficients of the model representing the weights of past values</li>
+<li>$\phi_1, \phi_2,…,\phi_p$: coefficients of the model representing the weights of past values</li>
 <li>$p$: the number of past time steps or lagged terms that the model uses to predict the current value, order of the AR model</li>
 <li>$\epsilon_t$: a random error term (white noise), assumed to have a mean of 0 and constant variance</li>
 </ul>
-<h4 id="First-order-AR-Model-and-Dynamic-Programming"><a href="#First-order-AR-Model-and-Dynamic-Programming" class="headerlink" title="First-order AR Model and Dynamic Programming"></a>First-order AR Model and Dynamic Programming</h4><p>A first order AR model $AR(1)$,<br>$$<br>X_t &#x3D; c + \phi_1X_{t-1} + \epsilon_t<br>$$<br>The current value $X_t$ is determined by:</p>
+<h4 id="First-order-AR-Model-and-Dynamic-Programming">First-order AR Model and Dynamic Programming</h4>
+<p>A first order AR model $AR(1)$,<br>
+$$<br>
+X_t = c + \phi_1X_{t-1} + \epsilon_t<br>
+$$<br>
+The current value $X_t$ is determined by:</p>
 <ul>
 <li>A constant term $c$</li>
 <li>A weighted contribution from the previous value $X_{t-1}$</li>
 <li>A random noise term $\epsilon_t$</li>
 </ul>
 <p>This formula looks very close to a type of programming problems - dynamic programming - they both derive the current value based on previous state, but AR is more focus on prediction, DP is more focus on most optimized solution.</p>
-<h4 id="The-Order-in-AR-model"><a href="#The-Order-in-AR-model" class="headerlink" title="The Order in AR model"></a>The Order in AR model</h4><p>In an $AR(p)$ model, the order $p$ specifies how many prior time steps $X_{t-1},X_{t-2},…,X_{t-p}$ are included in the model to predict $X_t$,</p>
+<h4 id="The-Order-in-AR-model">The Order in AR model</h4>
+<p>In an $AR(p)$ model, the order $p$ specifies how many prior time steps $X_{t-1},X_{t-2},…,X_{t-p}$ are included in the model to predict $X_t$,</p>
 <ul>
 <li>A higher-order model can capture more complex dependencies on the past values of the series</li>
 <li>The choice of $p$ depends on the data and the structure of the time series</li>
@@ -261,7 +270,8 @@
 <li>A lower order might miss important temporal dependencies</li>
 </ul>
 <p>The order in $AR(p)$ models defines the “memory” of the model - how far back in time the model looks to predict the current value. It controls the number of lagged terms $X_{t-1}, X_{t-2}, …,X_{t-p}$ used in the regression.</p>
-<h3 id="Features"><a href="#Features" class="headerlink" title="Features"></a>Features</h3><ol>
+<h3 id="Features">Features</h3>
+<ol>
 <li>Stationarity (稳定性)</li>
 </ol>
 <ul>
@@ -275,13 +285,15 @@
 <li>The values of the series are correlated with their past values</li>
 <li>Tools like the auto-correlation function (ACF) and partial auto-correlation function (PACF) are used to identify and fit AR models</li>
 </ul>
-<h3 id="Relationship-to-Deep-Learning"><a href="#Relationship-to-Deep-Learning" class="headerlink" title="Relationship to Deep Learning"></a>Relationship to Deep Learning</h3><p>The concept of auto-regression is widely used in deep learning, especially in sequence models,</p>
+<h3 id="Relationship-to-Deep-Learning">Relationship to Deep Learning</h3>
+<p>The concept of auto-regression is widely used in deep learning, especially in sequence models,</p>
 <ol>
 <li>Recurrent Neural Networks (RNNs): used a similar idea to predict the next step in a sequence based on past values.</li>
 <li>Transformers: auto-regressive structures are used in models like GPT to generate text sequentially, where each token depends on the previously generated tokens.</li>
 <li>Auto-regressive Language Models: predict the probability of the current word based on the previous sequence of words</li>
 </ol>
-<h3 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h3><p>The AR model is a fundamental concept in time series analysis, providing a simple and effective way to model the relationships between past and present values of a series. It is a key tool in both traditional statistics and modern machine learning approaches for sequence modeling.</p>
+<h3 id="Summary">Summary</h3>
+<p>The AR model is a fundamental concept in time series analysis, providing a simple and effective way to model the relationships between past and present values of a series. It is a key tool in both traditional statistics and modern machine learning approaches for sequence modeling.</p>
 
         </div>
 

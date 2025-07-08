@@ -43,7 +43,6 @@
         
     
 
-
 <meta name="generator" content="Hexo 7.3.0"></head>
 
 <body>
@@ -221,43 +220,49 @@
         </header>
 
         <div class="post-content">
-            <h1 id="What-is-Regularization"><a href="#What-is-Regularization" class="headerlink" title="What is Regularization"></a>What is Regularization</h1><p>Regularization refers to any technique used to prevent overfitting in machine learning models. Overfitting happens when a model performs well on training data but poorly on unseen (test) data because it “memorizes” patterns instead of learning general rules.</p>
-<h1 id="Purpose-of-Regularization"><a href="#Purpose-of-Regularization" class="headerlink" title="Purpose of Regularization"></a>Purpose of Regularization</h1><p>Regularization helps models:</p>
+            <h1>What is Regularization</h1>
+<p>Regularization refers to any technique used to prevent overfitting in machine learning models. Overfitting happens when a model performs well on training data but poorly on unseen (test) data because it “memorizes” patterns instead of learning general rules.</p>
+<h1>Purpose of Regularization</h1>
+<p>Regularization helps models:</p>
 <ol>
 <li>Generalize better to new data.</li>
 <li>Avoid relying too much on specific features or neurons.</li>
 <li>Learn smoother, more robust representations.</li>
 </ol>
-<h1 id="Regularization-Techniques"><a href="#Regularization-Techniques" class="headerlink" title="Regularization Techniques"></a>Regularization Techniques</h1><table>
+<h1>Regularization Techniques</h1>
+<table>
 <thead>
 <tr>
-<th align="left">Method</th>
-<th align="left">What It Does</th>
+<th style="text-align:left">Method</th>
+<th style="text-align:left">What It Does</th>
 </tr>
 </thead>
-<tbody><tr>
-<td align="left">Dropout</td>
-<td align="left">Randomly zeroes out neurons during training</td>
+<tbody>
+<tr>
+<td style="text-align:left">Dropout</td>
+<td style="text-align:left">Randomly zeroes out neurons during training</td>
 </tr>
 <tr>
-<td align="left">L2 Regularization</td>
-<td align="left">Adds a penalty for large weights (also called weight decay)</td>
+<td style="text-align:left">L2 Regularization</td>
+<td style="text-align:left">Adds a penalty for large weights (also called weight decay)</td>
 </tr>
 <tr>
-<td align="left">Early Stopping</td>
-<td align="left">Stops training when validation loss stops improving</td>
+<td style="text-align:left">Early Stopping</td>
+<td style="text-align:left">Stops training when validation loss stops improving</td>
 </tr>
 <tr>
-<td align="left">Data Augmentation</td>
-<td align="left">Adds variety to training data to avoid memorization</td>
+<td style="text-align:left">Data Augmentation</td>
+<td style="text-align:left">Adds variety to training data to avoid memorization</td>
 </tr>
-</tbody></table>
-<h1 id="Dropout-In-Real-World"><a href="#Dropout-In-Real-World" class="headerlink" title="Dropout In Real World"></a>Dropout In Real World</h1><p>Imagine the learning process is a student taking an exam, dropout is like giving the student slightly incomplete notes every time they study. Over time, they learn the underlying concepts instead of memorizing exact phrases – leaning to better generalization.</p>
-<h1 id="Dropout-Example-In-Transformer-Classifier-Head-Training"><a href="#Dropout-Example-In-Transformer-Classifier-Head-Training" class="headerlink" title="Dropout Example In Transformer Classifier Head Training"></a>Dropout Example In Transformer Classifier Head Training</h1><p>“Add regularization before the final classifier” –&gt; (What does it mean?) –&gt; “Apply dropout or another technique to the features passed to the final classification layer to prevent overfitting and encourage generalization”</p>
+</tbody>
+</table>
+<h1>Dropout In Real World</h1>
+<p>Imagine the learning process is a student taking an exam, dropout is like giving the student slightly incomplete notes every time they study. Over time, they learn the underlying concepts instead of memorizing exact phrases – leaning to better generalization.</p>
+<h1>Dropout Example In Transformer Classifier Head Training</h1>
+<p>“Add regularization before the final classifier” --&gt; (What does it mean?) --&gt; “Apply dropout or another technique to the features passed to the final classification layer to prevent overfitting and encourage generalization”</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sequence_output = <span class="variable language_">self</span>.dropout(sequence_output)</span><br><span class="line">classifier_logits = <span class="variable language_">self</span>.score(sequence_output)</span><br></pre></td></tr></table></figure>
-
-
-<h1 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h1><p>Adding dropout before the classifier introduces controlled noise, making it harder for the model to memorize patterns – this encourage learning of generalizable features instead.</p>
+<h1>Summary</h1>
+<p>Adding dropout before the classifier introduces controlled noise, making it harder for the model to memorize patterns – this encourage learning of generalizable features instead.</p>
 
         </div>
 
