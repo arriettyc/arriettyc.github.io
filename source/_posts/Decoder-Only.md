@@ -36,6 +36,7 @@ With auto-regression, decoder-only model can handel encoder-decoder tasks (trans
 2. **Auto-regressive generation**, perfect for open-ended text generation and dialogue, as mentioned above
 3. **Scaling**, easier to parallelize w/o worrying about complex encoder-decoder attention patterns
 4. **Unified Interface**, a single sequence concat “prompt” and “response” parts w/o special cross attention rules
+
 In shorts, decoder-only is simpler, faster, and fits LLM pre-training better
 
 A decoder-only transformer is a neural network architecture that uses only the decoder component of the transformer design, applies causal self-attention, and is trained to predict the next token in an auto-regressive fashion, enabling natural text generation w/o a separate encoder.
