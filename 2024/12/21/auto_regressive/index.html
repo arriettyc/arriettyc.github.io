@@ -13,7 +13,7 @@
 
 
 
-<title>Decoder Only | Xin&#39;s Blog</title>
+<title>Auto Regressive | Xin&#39;s Blog</title>
 
 
 
@@ -202,7 +202,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">Decoder Only</h1>
+            <h1 class="post-title">Auto Regressive</h1>
             
                 <div class="post-meta">
                     
@@ -211,7 +211,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">January 8, 2025&nbsp;&nbsp;22:39:26</a>
+                        Date: <a href="#">December 21, 2024&nbsp;&nbsp;23:03:00</a>
                         </span>
                     
                     
@@ -220,54 +220,69 @@
         </header>
 
         <div class="post-content">
-            <p>Origin Transformers = Encoder + Decoder</p>
-<p>When the Transformer model architecture was originally introduced in the paper Attention is All You Need, it has 2 parts</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>Part</th>
-<th>Purpose</th>
-<th>Example</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Encoder</td>
-<td>Reads the input and builds a contextual hidden representation (“understands” the input)</td>
-<td>reads an Chinese sentence</td>
-</tr>
-<tr>
-<td>Decoder</td>
-<td>Generates output tokens one-by-one, using the both previous outputs (causal attention) and encoder outputs (cross attention)</td>
-<td>outputs an English sentence</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h2 id="Decoder-Only-Model"><a href="#Decoder-Only-Model" class="headerlink" title="Decoder-Only Model"></a>Decoder-Only Model</h2><p>A decoder-only model only uses the decoder stack, it learns to predict the next token in a sequence causally (w/o looking ahead at future tokens).</p>
-<p>A decoder-only transformers,</p>
-<ol>
-<li>Inputs are fed directly into the decoder – no separate encoder</li>
-<li>Self-attention is causal (masked)</li>
-</ol>
+            <p>An Auto-Regressive (AR) model is a type of statistical model used in time series analysis to describe how the current value of a time series depends on its previous values (i.e. its own historical data).</p>
+<p>The term “auto-regressive” means that the model regresses the current value of the series on its own past value. It’s commonly used for forecasting and understanding the dynamics of time series data.</p>
+<h3 id="Key-Concept"><a href="#Key-Concept" class="headerlink" title="Key Concept"></a>Key Concept</h3><p>The AR model assumes that the current value $X_t$ of a time series in a linear combination of its previous values and a random error term.</p>
+<h3 id="Mathematical-Representation"><a href="#Mathematical-Representation" class="headerlink" title="Mathematical Representation"></a>Mathematical Representation</h3><p>A $p-order$ auto-regressive model $AR(p)$ is a linear formula of,</p>
+<script type="math/tex; mode=display">
+X_t = c + \phi_1X_{t-1} + \phi_2X_{t-2} + ... + \phi_pX_{t-p} + \epsilon_t</script><p>where</p>
 <ul>
-<li>A token can only attend to previous tokens, not future ones</li>
-<li>Prevents “cheating” during training and generation</li>
+<li>$X_t$: the value at time t</li>
+<li>$c$: a constant term</li>
+<li>$\phi_1, \phi_2,..,\phi_p$: coefficients of the model representing the weights of past values</li>
+<li>$p$: the number of past time steps or lagged terms that the model uses to predict the current value, order of the AR model</li>
+<li>$\epsilon_t$: a random error term (white noise), assumed to have a mean of 0 and constant variance</li>
+</ul>
+<h4 id="First-order-AR-Model-and-Dynamic-Programming"><a href="#First-order-AR-Model-and-Dynamic-Programming" class="headerlink" title="First-order AR Model and Dynamic Programming"></a>First-order AR Model and Dynamic Programming</h4><p>A first order AR model $AR(1)$,</p>
+<script type="math/tex; mode=display">
+X_t = c + \phi_1X_{t-1} + \epsilon_t</script><p>The current value $X_t$ is determined by:</p>
+<ul>
+<li>A constant term $c$</li>
+<li>A weighted contribution from the previous value $X_{t-1}$</li>
+<li>A random noise term $\epsilon_t$</li>
+</ul>
+<p>This formula looks very close to a type of programming problems - dynamic programming - they both derive the current value based on previous state, but AR is more focus on prediction, DP is more focus on most optimized solution.</p>
+<h4 id="The-Order-in-AR-model"><a href="#The-Order-in-AR-model" class="headerlink" title="The Order in AR model"></a>The Order in AR model</h4><p>In an $AR(p)$ model, the order $p$ specifies how many prior time steps $X<em>{t-1},X</em>{t-2},…,X_{t-p}$ are included in the model to predict $X_t$,</p>
+<ul>
+<li>A higher-order model can capture more complex dependencies on the past values of the series</li>
+<li>The choice of $p$ depends on the data and the structure of the time series</li>
 </ul>
 <ol>
-<li>Auto-regressive generation, token by token prediction – each new token depends only on earlier ones</li>
-<li>Training Objective, <strong>Causal Language Modeling (CLM)</strong> – maximize the probability of the next token</li>
+<li>Determination the Order $P$</li>
 </ol>
-<p>As for today, majority of LLMs are decoder-based model, gpt/llama/mistral… Encoder-Decoder examples could be BART series, and used for translation / summarization etc</p>
-<h2 id="Why-Decoder-Only"><a href="#Why-Decoder-Only" class="headerlink" title="Why Decoder-Only"></a>Why Decoder-Only</h2><p>With auto-regression, decoder-only model can handel encoder-decoder tasks (translation/summarization) pretty well. But that’s not enough, more reasons,</p>
+<ul>
+<li>Partial Auto-correlation Function (PACF): identifies significant lags to include</li>
+<li>Model Selection Criteria: such as AIC(Akaike Information Criterion) or BIC(Bayesian Information Criterion) to find the optimal $p$ that balances complexity and accuracy</li>
+</ul>
 <ol>
-<li><strong>Simple</strong>, only one block (the decoder) makes the architecture lighter</li>
-<li><strong>Auto-regressive generation</strong>, perfect for open-ended text generation and dialogue, as mentioned above</li>
-<li><strong>Scaling</strong>, easier to parallelize w/o worrying about complex encoder-decoder attention patterns</li>
-<li><strong>Unified Interface</strong>, a single sequence concat “prompt” and “response” parts w/o special cross attention rules<br>In shorts, decoder-only is simpler, faster, and fits LLM pre-training better</li>
+<li>Trade-off</li>
 </ol>
-<p>A decoder-only transformer is a neural network architecture that uses only the decoder component of the transformer design, applies causal self-attention, and is trained to predict the next token in an auto-regressive fashion, enabling natural text generation w/o a separate encoder.</p>
+<ul>
+<li>A higher order increase model complexity and can lead to overfitting if the order is too high for the data</li>
+<li>A lower order might miss important temporal dependencies</li>
+</ul>
+<p>The order in $AR(p)$ models defines the “memory” of the model - how far back in time the model looks to predict the current value. It controls the number of lagged terms $X<em>{t-1}, X</em>{t-2}, …,X_{t-p}$ used in the regression.</p>
+<h3 id="Features"><a href="#Features" class="headerlink" title="Features"></a>Features</h3><ol>
+<li>Stationarity (稳定性)</li>
+</ol>
+<ul>
+<li>AR models are typically applied to stationary time series, where the mean and variance do not change over time.</li>
+<li>For an $AR(1)$ model, stationarity requires $|\phi_1| &lt; 1$</li>
+</ul>
+<ol>
+<li>Autocorrelation (自相关性)</li>
+</ol>
+<ul>
+<li>The values of the series are correlated with their past values</li>
+<li>Tools like the auto-correlation function (ACF) and partial auto-correlation function (PACF) are used to identify and fit AR models</li>
+</ul>
+<h3 id="Relationship-to-Deep-Learning"><a href="#Relationship-to-Deep-Learning" class="headerlink" title="Relationship to Deep Learning"></a>Relationship to Deep Learning</h3><p>The concept of auto-regression is widely used in deep learning, especially in sequence models,</p>
+<ol>
+<li>Recurrent Neural Networks (RNNs): used a similar idea to predict the next step in a sequence based on past values.</li>
+<li>Transformers: auto-regressive structures are used in models like GPT to generate text sequentially, where each token depends on the previously generated tokens.</li>
+<li>Auto-regressive Language Models: predict the probability of the current word based on the previous sequence of words</li>
+</ol>
+<h3 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h3><p>The AR model is a fundamental concept in time series analysis, providing a simple and effective way to model the relationships between past and present values of a series. It is a key tool in both traditional statistics and modern machine learning approaches for sequence modeling.</p>
 
         </div>
 
@@ -282,7 +297,7 @@
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="https://arriettyc.github.io/2025/01/08/Decoder-Only/">https://arriettyc.github.io/2025/01/08/Decoder-Only/</a></span>
+                        <span><a href="https://arriettyc.github.io/2024/12/21/auto_regressive/">https://arriettyc.github.io/2024/12/21/auto_regressive/</a></span>
                     </p>
                 
                 
@@ -300,6 +315,10 @@
                 <span>Tag(s):</span>
                 <span class="tag">
                     
+                    
+                        <a href="/tags/AutoRegressive/"># AutoRegressive</a>
+                    
+                        
                 </span>
             </div>
             <div>
@@ -310,10 +329,10 @@
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2025/01/10/nn-regularization/">NN Regularization -- Dropout in Additional Transformer Head</a>
+                <a class="prev" rel="prev" href="/2024/12/21/auto-regressive/">Auto Regressive</a>
             
             
-            <a class="next" rel="next" href="/2024/12/21/auto-regressive/">Auto Regressive</a>
+            <a class="next" rel="next" href="/2024/12/13/From-stochastic-to-deterministic-with-Minimize-Entropy/">From stochastic to deterministic with Minimize Entropy</a>
             
         </section>
 
