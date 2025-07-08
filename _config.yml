@@ -13,7 +13,7 @@ timezone: ''
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
-url: http://example.com
+url: https://arriettyc.github.io
 permalink: :year/:month/:day/:title/
 permalink_defaults:
 pretty_urls:
@@ -40,7 +40,7 @@ external_link:
   exclude: ''
 filename_case: 0
 render_drafts: false
-post_asset_folder: false
+post_asset_folder: true
 relative_link: false
 future: true
 syntax_highlighter: highlight.js
@@ -104,3 +104,28 @@ deploy:
   type: git
   repo: https://github.com/arriettyc/arriettyc.github.io.git
   branch: main
+
+# Markdown
+markdown_it:
+  html: true # Allow HTML tags (important for MathJax to inject its elements)
+  xhtmlOut: false
+  breaks: true # Set to false if you still see <br> tags within math blocks after this fix
+  langPrefix: lang-
+  linkify: true
+  typographer: true
+  quotes: '“”‘’'
+  plugins:
+    - markdown-it-mathjax3 # Enable the mathjax3 plugin for markdown-it
+
+# Existing Math Formulas Render Support from your image_450a05.png:
+math:
+  per_page: true # Keep this if you want math only on specific posts.
+
+mathjax:
+  enable: true # Keep this. Your theme likely uses this to conditionally load MathJax.
+  import: demand
+
+katex:
+  enable: false # Ensure KaTeX is disabled
+  copy_tex: false
+
