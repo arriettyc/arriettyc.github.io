@@ -1378,3 +1378,6 @@ body.dark-theme .highlight .code .deletion,
 body.dark-theme .highlight .code .meta {
   color: #7f7f7f;
 }
+.post-content blockquote {
+  font-size: 0.9em !important;
+}
