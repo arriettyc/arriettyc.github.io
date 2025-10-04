@@ -67,7 +67,7 @@ print(tokens)  # "E11.9" becomes a single token
 ```
 > Note: This custom mapping affects your tokenizer. A model must have embeddings for these IDs (i.e., be trained/fine-tuned with them) to benefit.
 
-### Train a new tokenizer from your dataset (recommended for custom domains)
+### Train a new tokenizer from your dataset
 
 Most flexible, especially for **multilingual data** (English, Chinese, Japanese, Russian, French, etc.). A strong default is **a joint multilingual Unigram model** with SentencePiece.
 
