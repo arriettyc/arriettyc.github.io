@@ -1,19 +1,13 @@
-<<<<<<< HEAD
-.DS_Store
-Thumbs.db
-db.json
-*.log
-node_modules/
-public/
-.deploy*/
-_multiconfig.yml
-=======
 # Dependencies
 node_modules/
 
 # Generated files
 public/
 .deploy_git/
+.deploy*/
+
+# Database
+db.json
 
 # Logs
 *.log
@@ -44,6 +38,10 @@ jspm_packages/
 .Trashes
 ehthumbs.db
 Thumbs.db
-db.json
-public/
->>>>>>> main
+
+# Hexo config
+_multiconfig.yml
+
+# Theme build artifacts
+themes/**/.DS_Store
+image/.DS_Store
