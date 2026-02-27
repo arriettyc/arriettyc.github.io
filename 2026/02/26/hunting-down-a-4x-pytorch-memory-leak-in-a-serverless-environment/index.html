@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Xin">
+
+
+
+
+
+<title>Hunting Down a 4x PyTorch Memory Leak in a Serverless Environment | Xin&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/image/avatar.png">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const pagebody = document.getElementsByTagName('body')[0]
+
+            function setTheme(status) {
+
+                if (status === 'dark') {
+                    window.sessionStorage.theme = 'dark'
+                    pagebody.classList.add('dark-theme');
+
+                } else if (status === 'light') {
+                    window.sessionStorage.theme = 'light'
+                    pagebody.classList.remove('dark-theme');
+                }
+            };
+
+            setTheme(window.sessionStorage.theme)
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">知りたいままに | Xin&#39;s Notebook</a></div>
+            <div class="menu navbar-right">
+                
+                <a class="menu-item" href="/archives">Posts</a>
+                
+                <a class="menu-item" href="/category">Categories</a>
+                
+                <a class="menu-item" href="/tag">Tags</a>
+                
+                <a class="menu-item" href="/files/resume_0223.pdf">Resume</a>
+                
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">知りたいままに | Xin&#39;s Notebook</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">
+                    <svg class="menu-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M4.5 17.27q-.213 0-.356-.145T4 16.768t.144-.356t.356-.143h15q.213 0 .356.144q.144.144.144.357t-.144.356t-.356.143zm0-4.77q-.213 0-.356-.144T4 11.999t.144-.356t.356-.143h15q.213 0 .356.144t.144.357t-.144.356t-.356.143zm0-4.77q-.213 0-.356-.143Q4 7.443 4 7.23t.144-.356t.356-.143h15q.213 0 .356.144T20 7.23t-.144.356t-.356.144z"/></svg>
+                    <svg class="close-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Material Symbols Light by Google - https://github.com/google/material-design-icons/blob/master/LICENSE --><path fill="currentColor" d="m12 12.708l-5.246 5.246q-.14.14-.344.15t-.364-.15t-.16-.354t.16-.354L11.292 12L6.046 6.754q-.14-.14-.15-.344t.15-.364t.354-.16t.354.16L12 11.292l5.246-5.246q.14-.14.345-.15q.203-.01.363.15t.16.354t-.16.354L12.708 12l5.246 5.246q.14.14.15.345q.01.203-.15.363t-.354.16t-.354-.16z"/></svg>
+                </div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                <a class="menu-item" href="/archives">Posts</a>
+                
+                <a class="menu-item" href="/category">Categories</a>
+                
+                <a class="menu-item" href="/tag">Tags</a>
+                
+                <a class="menu-item" href="/files/resume_0223.pdf">Resume</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if (toggleMenu.classList.contains("active")) {
+            toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        } else {
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Hunting Down a 4x PyTorch Memory Leak in a Serverless Environment</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Xin</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">February 26, 2026&nbsp;&nbsp;16:44:15</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>NOTE: This article was co-authored by myself and a coding agent while investigating a stubborn memory leak. After finally targeting the root cause and applied the fix, I asked the agent to summarize our journey. Credits to the human-AI partnership for this one :)</p>
+<h2 id="The-Issue-The-400-Memory-Spike-for-a-Single-PyTorch-Code-Snippet"><a href="#The-Issue-The-400-Memory-Spike-for-a-Single-PyTorch-Code-Snippet" class="headerlink" title="The Issue: The 400% Memory Spike for a Single PyTorch Code Snippet"></a>The Issue: The 400% Memory Spike for a Single PyTorch Code Snippet</h2><p>Why does this matter? Cloud platforms bill dynamically based on memory consumption. A 4x spike from a single PyTorch code snippet means costs scale catastrophically when running dozens or hundreds of snippets in sequence.</p>
+<figure>
+  <img src="image.png" alt="memory spike from 100MB to 400MB for a single pytorch code snippet">
+  <figcaption>Memory spike from 100MB to 400MB for a single pytorch code snippet</figcaption>
+</figure>
+
+<p>When running a web service (like FastAPI/Uvicorn) that dynamically executes PyTorch code on cloud platforms, managing the VRAM/RAM footprint is a high-stakes game. Memory is expensive, and leaks are costly.</p>
+<p>Our environment was <strong>perfectly stable while running general PyTorch logic</strong>, but we hit a wall when utilizing fused operations like <code>F.scaled_dot_product_attention</code> After calling this func, the container’s memory footprint exploded by 400%. Unlike standard operations that release memory back to the allocator after code execution done, these fused operations seemed to initialize global C++ backend structures that ‘stuck’ to the process. We weren’t just dealing with a spike; we were dealing with a permanent baseline shift that ignored all our attempts at manual cleanup. This will cause catastrophic issue when scaling to handful code runs.</p>
+<p><strong>A note on VRAM vs. RAM:</strong> This entire investigation takes place on RAM. While similar memory management challenges exist on the VRAM, the specific mechanisms discussed here — <code>fork()</code>, Copy-On-Write, and cgroup accounting — are all RAM concerns. CUDA VRAM is managed by the GPU driver and is not subject to the same process-level memory semantics.</p>
+<h2 id="First-Try-Python’s-exec-and-Garbage-Collection"><a href="#First-Try-Python’s-exec-and-Garbage-Collection" class="headerlink" title="First Try: Python’s exec() and Garbage Collection"></a>First Try: Python’s <code>exec()</code> and Garbage Collection</h2><p>When running untrusted or dynamic code via Python’s <code>exec()</code>, the <code>namespace</code> dictionary retains references to all classes, functions, and variables created during execution. </p>
+<ul>
+<li><strong>The Naive Fix:</strong> We aggressively used <code>del</code> on the namespace, manually recursively cleared out any custom objects caching <code>torch.Tensor</code> objects, and forced <code>gc.collect()</code>. </li>
+<li><strong>The Result:</strong> The memory remained pegged at 4x the baseline.</li>
+<li><strong>The Lesson:</strong> Python’s Garbage Collector handles Python object lifetimes, but PyTorch leans heavily on underlying C++ backend memory pools and caching allocators.</li>
+</ul>
+<h2 id="Second-Try-Reset-PyTorch’s-Hidden-C-Caches"><a href="#Second-Try-Reset-PyTorch’s-Hidden-C-Caches" class="headerlink" title="Second Try: Reset PyTorch’s Hidden C++ Caches"></a>Second Try: Reset PyTorch’s Hidden C++ Caches</h2><p>PyTorch is a massive C++ library wrapped in Python. When you execute fused operations like <code>scaled_dot_product_attention</code>, PyTorch spins up several hidden mechanisms under the hood.</p>
+<ul>
+<li><strong>The Fix Attempt:</strong> We manually triggered <code>torch.compiler.reset()</code>, explicitly cleared allocator caches, cleared JIT registries (<code>torch._C._jit_clear_class_registry()</code>), and even used <code>ctypes</code> to call <code>libc.malloc_trim(0)</code> to force the Linux C-library to return unmapped heap memory back to the OS.</li>
+<li><strong>The Result:</strong> Memory <em>still</em> wouldn’t drop on the server dashboard!</li>
+</ul>
+<h2 id="Third-Try-OS-level-process-termination"><a href="#Third-Try-OS-level-process-termination" class="headerlink" title="Third Try: OS-level process termination."></a>Third Try: OS-level process termination.</h2><p>Since manual memory/cache clearing did not pull down memory usage, we decided to use the ultimate weapon against memory leaks: OS-level process termination.<br>We wrapped the PyTorch code execution inside a completely isolated <code>multiprocessing.Process</code> worker.</p>
+<ul>
+<li><p><strong>The Theory:</strong> When the worker process finishes and exits, the Linux kernel will instantly and brutally destroy the entire process, forcibly reclaiming 100% of the memory used by PyTorch’s hidden C++ backend pools.</p>
+</li>
+<li><p><strong>The Result:</strong> We deployed the multiprocessing refactor. The cloud provider’s system dashboard spiked during execution, but incredibly, <strong>the dashboard memory still stayed glued at 300 MB after the process exited!</strong></p>
+</li>
+</ul>
+<h2 id="The-Plot-Thickens-Logs-vs-Dashboards"><a href="#The-Plot-Thickens-Logs-vs-Dashboards" class="headerlink" title="The Plot Thickens: Logs vs. Dashboards"></a>The Plot Thickens: Logs vs. Dashboards</h2><p>Since the system memory chart was not very informative (no breakdowns etc), we injected explicit memory logs around the test execution code:<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">MEMORY [Before Execution]: 85 MB</span><br><span class="line">MEMORY [After Execution (Before Cleanup)]: 314 MB</span><br><span class="line">MEMORY [After Cleanup]: 86 MB</span><br></pre></td></tr></table></figure><br>The logs confirmed that the Python process <em>was</em> successfully releasing the memory! It went from 85 MB -&gt; 314 MB -&gt; back to 86 MB. The Python application was not leaking.</p>
+<figure>
+  <img src="unhealthy_mem_chart.png" alt="log shows memory released while system memory chart shows only jagged edges">
+  <figcaption>Log shows memory released while system memory chart shows only jagged edges</figcaption>
+</figure>
+
+<p>However, the cloud provider’s system chart still displayed the container’s memory hovering above 300 MB indefinitely. How could the process memory drop internally, but the container memory stay high?</p>
+<h2 id="The-True-Culprit-Linux-fork-and-Copy-On-Write-COW-Memory"><a href="#The-True-Culprit-Linux-fork-and-Copy-On-Write-COW-Memory" class="headerlink" title="The True Culprit: Linux fork() and Copy-On-Write (COW) Memory"></a>The True Culprit: Linux <code>fork()</code> and Copy-On-Write (COW) Memory</h2><p>We actually on the right track by isolating with <code>multiprocessing.Process</code>, the tricky part is by default on Linux, <code>multiprocessing</code> uses the <code>fork</code> start method.</p>
+<p>When a Linux process forks, the child process inherits the parent’s entire memory map using a highly efficient trick called <strong>Copy-On-Write</strong>. The child and parent share the exact same physical RAM/VRAM until one of them modifies a page of memory. </p>
+<p>Here is what was actually happening:</p>
+<ol>
+<li>The main Uvicorn web server (parent) forked a worker process (child) to run the PyTorch code snippet.</li>
+<li>The child process imported PyTorch, executed the tensor math, and initialized heavy C++ cache pools.</li>
+<li>This massive memory initialization <em>dirtied</em> the shared COW pages — the child got private copies of those pages. When the child process exited, the kernel reclaimed the child’s private pages, which is why our in-process memory logs showed memory returning to 86 MB.</li>
+</ol>
+<p><strong>So why did the cloud dashboard still show high memory?</strong></p>
+<p>The cloud provider’s dashboard reports <strong>container-level (cgroup) memory usage</strong>, not individual process RSS. Cgroup memory accounting includes more than just process heap memory — it encompasses page cache, slab allocations, kernel page tables, and <code>glibc</code> malloc arena fragmentation. When the forked child process performed heavy allocations and then exited, several effects conspired to keep the cgroup memory counter elevated:</p>
+<ul>
+<li><strong>glibc malloc arena fragmentation:</strong> The child process’s malloc arenas may have caused the parent’s heap to fragment during the fork. Even after the child exits, the parent’s glibc allocator may hold onto large arena mappings that are mostly empty but not returned to the OS.</li>
+<li><strong>Kernel accounting overhead:</strong> The COW page fault handling, page table entries, and kernel slab caches associated with the fork/exit cycle are charged to the container’s cgroup and may not be reclaimed immediately.</li>
+<li><strong>Page cache effects:</strong> Any file I/O during the child’s PyTorch initialization (loading shared libraries, etc.) gets charged to the cgroup’s page cache, which the kernel keeps around until memory pressure forces eviction.</li>
+</ul>
+<p>The key insight: <strong>the Python process was not leaking</strong>, but the container’s cgroup memory accounting was inflated by side effects of the <code>fork</code> lifecycle.</p>
+<h2 id="The-Solution-The-quot-spawn-quot-Context"><a href="#The-Solution-The-quot-spawn-quot-Context" class="headerlink" title="The Solution: The &quot;spawn&quot; Context"></a>The Solution: The <code>&quot;spawn&quot;</code> Context</h2><p>The ultimate fix was deceptively simple: explicitly changing the multiprocessing start method from <code>&quot;fork&quot;</code> to <code>&quot;spawn&quot;</code>.<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> multiprocessing <span class="keyword">as</span> mp</span><br><span class="line"></span><br><span class="line"><span class="comment"># Instead of p = mp.Process(...)</span></span><br><span class="line">ctx = mp.get_context(<span class="string">&#x27;spawn&#x27;</span>)</span><br><span class="line">p = ctx.Process(target=run_tests_worker, args=(...))</span><br></pre></td></tr></table></figure><br>Unlike <code>fork</code>, the <code>spawn</code> method boots up a completely fresh, empty Python interpreter. It does not share the parent’s memory map.</p>
+<ul>
+<li>The worker process boots up in a clean address space, imports PyTorch, allocates its C++ caches and tensors, and runs the tests.</li>
+<li>When the worker process finishes and exits, the OS destroys the entire process, fully recovering 100% of the memory. Because the worker was never COW-linked to the parent, there is no arena fragmentation, no shared page table bloat, and no lingering cgroup accounting artifacts.</li>
+<li>The parent Uvicorn process is completely insulated from the C++ memory allocations, ensuring the cloud container’s baseline memory stays perfectly flat, entirely avoiding the 4x inflation penalty.</li>
+</ul>
+<figure>
+  <img src="healthy_mem_chart.png" alt="bring back healthy memory chart">
+  <figcaption>Bring back healthy memory chart</figcaption>
+</figure>
+
+<h2 id="Key-Takeaways"><a href="#Key-Takeaways" class="headerlink" title="Key Takeaways"></a>Key Takeaways</h2><ol>
+<li><strong>Python GC is not enough:</strong> <code>gc.collect()</code> only clears Python references. It cannot force C++ extensions to release global static caches or workspace memory held by libraries like oneDNN/MKL.</li>
+<li><strong>Beware of <code>fork</code> with heavy C-extensions:</strong> Using <code>multiprocessing</code> with the default <code>fork</code> method is dangerous when the child process imports massive C-libraries like PyTorch or TensorFlow. The Copy-On-Write mechanics and resulting glibc arena fragmentation will inadvertently inflate the container’s memory footprint.</li>
+<li><strong>OS-level isolation is king:</strong> If you are running heavy transient workloads on a memory-constrained cloud service, isolate them in a <code>&quot;spawn&quot;</code> process. Terminating a cleanly spawned process is the most reliable way to ensure Linux fully returns the RAM to the hypervisor.</li>
+<li><strong>Don’t trust the dashboard blindly:</strong> Cloud platforms typically report cgroup-level memory, which includes page cache, kernel overhead, and allocator fragmentation — not just your application’s heap. Your process may be behaving correctly even when the dashboard says otherwise.</li>
+<li><strong><code>malloc_trim</code> may actually work:</strong> If you see process-level memory drop but dashboard memory stay high, <code>malloc_trim(0)</code> might be doing its job. The discrepancy is likely in cgroup accounting, not in your cleanup code.</li>
+</ol>
+<p>Happy hunting.</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Xin</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://arriettyc.github.io/2026/02/26/hunting-down-a-4x-pytorch-memory-leak-in-a-serverless-environment/">https://arriettyc.github.io/2026/02/26/hunting-down-a-4x-pytorch-memory-leak-in-a-serverless-environment/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/memory-gc-container-pytorch-cache/"># memory, gc, container, pytorch, cache</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2025/03/12/tokenizer-toy-box/">Tokenizer Playbook: BPE, SentencePiece, and Multilingual Tricks</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Xin | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>
