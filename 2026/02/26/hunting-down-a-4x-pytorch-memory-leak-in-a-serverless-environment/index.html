@@ -221,42 +221,51 @@
 
         <div class="post-content">
             <p>NOTE: This article was co-authored by myself and a coding agent while investigating a stubborn memory leak. After finally targeting the root cause and applied the fix, I asked the agent to summarize our journey. Credits to the human-AI partnership for this one :)</p>
-<h2 id="The-Issue-The-400-Memory-Spike-for-a-Single-PyTorch-Code-Snippet"><a href="#The-Issue-The-400-Memory-Spike-for-a-Single-PyTorch-Code-Snippet" class="headerlink" title="The Issue: The 400% Memory Spike for a Single PyTorch Code Snippet"></a>The Issue: The 400% Memory Spike for a Single PyTorch Code Snippet</h2><p>Why does this matter? Cloud platforms bill dynamically based on memory consumption. A 4x spike from a single PyTorch code snippet means costs scale catastrophically when running dozens or hundreds of snippets in sequence.</p>
+<h2 id="The-Issue-The-400-Memory-Spike-for-a-Single-PyTorch-Code-Snippet">The Issue: The 400% Memory Spike for a Single PyTorch Code Snippet</h2>
+<p>Why does this matter? Cloud platforms bill dynamically based on memory consumption. A 4x spike from a single PyTorch code snippet means costs scale catastrophically when running dozens or hundreds of snippets in sequence.</p>
 <figure>
   <img src="image.png" alt="memory spike from 100MB to 400MB for a single pytorch code snippet">
   <figcaption>Memory spike from 100MB to 400MB for a single pytorch code snippet</figcaption>
 </figure>
-
 <p>When running a web service (like FastAPI/Uvicorn) that dynamically executes PyTorch code on cloud platforms, managing the VRAM/RAM footprint is a high-stakes game. Memory is expensive, and leaks are costly.</p>
 <p>Our environment was <strong>perfectly stable while running general PyTorch logic</strong>, but we hit a wall when utilizing fused operations like <code>F.scaled_dot_product_attention</code> After calling this func, the container’s memory footprint exploded by 400%. Unlike standard operations that release memory back to the allocator after code execution done, these fused operations seemed to initialize global C++ backend structures that ‘stuck’ to the process. We weren’t just dealing with a spike; we were dealing with a permanent baseline shift that ignored all our attempts at manual cleanup. This will cause catastrophic issue when scaling to handful code runs.</p>
 <p><strong>A note on VRAM vs. RAM:</strong> This entire investigation takes place on RAM. While similar memory management challenges exist on the VRAM, the specific mechanisms discussed here — <code>fork()</code>, Copy-On-Write, and cgroup accounting — are all RAM concerns. CUDA VRAM is managed by the GPU driver and is not subject to the same process-level memory semantics.</p>
-<h2 id="First-Try-Python’s-exec-and-Garbage-Collection"><a href="#First-Try-Python’s-exec-and-Garbage-Collection" class="headerlink" title="First Try: Python’s exec() and Garbage Collection"></a>First Try: Python’s <code>exec()</code> and Garbage Collection</h2><p>When running untrusted or dynamic code via Python’s <code>exec()</code>, the <code>namespace</code> dictionary retains references to all classes, functions, and variables created during execution. </p>
+<h2 id="First-Try-Python’s-exec-and-Garbage-Collection">First Try: Python’s <code>exec()</code> and Garbage Collection</h2>
+<p>When running untrusted or dynamic code via Python’s <code>exec()</code>, the <code>namespace</code> dictionary retains references to all classes, functions, and variables created during execution.</p>
 <ul>
-<li><strong>The Naive Fix:</strong> We aggressively used <code>del</code> on the namespace, manually recursively cleared out any custom objects caching <code>torch.Tensor</code> objects, and forced <code>gc.collect()</code>. </li>
+<li><strong>The Naive Fix:</strong> We aggressively used <code>del</code> on the namespace, manually recursively cleared out any custom objects caching <code>torch.Tensor</code> objects, and forced <code>gc.collect()</code>.</li>
 <li><strong>The Result:</strong> The memory remained pegged at 4x the baseline.</li>
 <li><strong>The Lesson:</strong> Python’s Garbage Collector handles Python object lifetimes, but PyTorch leans heavily on underlying C++ backend memory pools and caching allocators.</li>
 </ul>
-<h2 id="Second-Try-Reset-PyTorch’s-Hidden-C-Caches"><a href="#Second-Try-Reset-PyTorch’s-Hidden-C-Caches" class="headerlink" title="Second Try: Reset PyTorch’s Hidden C++ Caches"></a>Second Try: Reset PyTorch’s Hidden C++ Caches</h2><p>PyTorch is a massive C++ library wrapped in Python. When you execute fused operations like <code>scaled_dot_product_attention</code>, PyTorch spins up several hidden mechanisms under the hood.</p>
+<h2 id="Second-Try-Reset-PyTorch’s-Hidden-C-Caches">Second Try: Reset PyTorch’s Hidden C++ Caches</h2>
+<p>PyTorch is a massive C++ library wrapped in Python. When you execute fused operations like <code>scaled_dot_product_attention</code>, PyTorch spins up several hidden mechanisms under the hood.</p>
 <ul>
 <li><strong>The Fix Attempt:</strong> We manually triggered <code>torch.compiler.reset()</code>, explicitly cleared allocator caches, cleared JIT registries (<code>torch._C._jit_clear_class_registry()</code>), and even used <code>ctypes</code> to call <code>libc.malloc_trim(0)</code> to force the Linux C-library to return unmapped heap memory back to the OS.</li>
 <li><strong>The Result:</strong> Memory <em>still</em> wouldn’t drop on the server dashboard!</li>
 </ul>
-<h2 id="Third-Try-OS-level-process-termination"><a href="#Third-Try-OS-level-process-termination" class="headerlink" title="Third Try: OS-level process termination."></a>Third Try: OS-level process termination.</h2><p>Since manual memory/cache clearing did not pull down memory usage, we decided to use the ultimate weapon against memory leaks: OS-level process termination.<br>We wrapped the PyTorch code execution inside a completely isolated <code>multiprocessing.Process</code> worker.</p>
+<h2 id="Third-Try-OS-level-process-termination">Third Try: OS-level process termination.</h2>
+<p>Since manual memory/cache clearing did not pull down memory usage, we decided to use the ultimate weapon against memory leaks: OS-level process termination.<br>
+We wrapped the PyTorch code execution inside a completely isolated <code>multiprocessing.Process</code> worker.</p>
 <ul>
-<li><p><strong>The Theory:</strong> When the worker process finishes and exits, the Linux kernel will instantly and brutally destroy the entire process, forcibly reclaiming 100% of the memory used by PyTorch’s hidden C++ backend pools.</p>
+<li>
+<p><strong>The Theory:</strong> When the worker process finishes and exits, the Linux kernel will instantly and brutally destroy the entire process, forcibly reclaiming 100% of the memory used by PyTorch’s hidden C++ backend pools.</p>
 </li>
-<li><p><strong>The Result:</strong> We deployed the multiprocessing refactor. The cloud provider’s system dashboard spiked during execution, but incredibly, <strong>the dashboard memory still stayed glued at 300 MB after the process exited!</strong></p>
+<li>
+<p><strong>The Result:</strong> We deployed the multiprocessing refactor. The cloud provider’s system dashboard spiked during execution, but incredibly, <strong>the dashboard memory still stayed glued at 300 MB after the process exited!</strong></p>
 </li>
 </ul>
-<h2 id="The-Plot-Thickens-Logs-vs-Dashboards"><a href="#The-Plot-Thickens-Logs-vs-Dashboards" class="headerlink" title="The Plot Thickens: Logs vs. Dashboards"></a>The Plot Thickens: Logs vs. Dashboards</h2><p>Since the system memory chart was not very informative (no breakdowns etc), we injected explicit memory logs around the test execution code:<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">MEMORY [Before Execution]: 85 MB</span><br><span class="line">MEMORY [After Execution (Before Cleanup)]: 314 MB</span><br><span class="line">MEMORY [After Cleanup]: 86 MB</span><br></pre></td></tr></table></figure><br>The logs confirmed that the Python process <em>was</em> successfully releasing the memory! It went from 85 MB -&gt; 314 MB -&gt; back to 86 MB. The Python application was not leaking.</p>
+<h2 id="The-Plot-Thickens-Logs-vs-Dashboards">The Plot Thickens: Logs vs. Dashboards</h2>
+<p>Since the system memory chart was not very informative (no breakdowns etc), we injected explicit memory logs around the test execution code:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">MEMORY [Before Execution]: 85 MB</span><br><span class="line">MEMORY [After Execution (Before Cleanup)]: 314 MB</span><br><span class="line">MEMORY [After Cleanup]: 86 MB</span><br></pre></td></tr></table></figure>
+<p>The logs confirmed that the Python process <em>was</em> successfully releasing the memory! It went from 85 MB -&gt; 314 MB -&gt; back to 86 MB. The Python application was not leaking.</p>
 <figure>
   <img src="unhealthy_mem_chart.png" alt="log shows memory released while system memory chart shows only jagged edges">
   <figcaption>Log shows memory released while system memory chart shows only jagged edges</figcaption>
 </figure>
-
 <p>However, the cloud provider’s system chart still displayed the container’s memory hovering above 300 MB indefinitely. How could the process memory drop internally, but the container memory stay high?</p>
-<h2 id="The-True-Culprit-Linux-fork-and-Copy-On-Write-COW-Memory"><a href="#The-True-Culprit-Linux-fork-and-Copy-On-Write-COW-Memory" class="headerlink" title="The True Culprit: Linux fork() and Copy-On-Write (COW) Memory"></a>The True Culprit: Linux <code>fork()</code> and Copy-On-Write (COW) Memory</h2><p>We actually on the right track by isolating with <code>multiprocessing.Process</code>, the tricky part is by default on Linux, <code>multiprocessing</code> uses the <code>fork</code> start method.</p>
-<p>When a Linux process forks, the child process inherits the parent’s entire memory map using a highly efficient trick called <strong>Copy-On-Write</strong>. The child and parent share the exact same physical RAM/VRAM until one of them modifies a page of memory. </p>
+<h2 id="The-True-Culprit-Linux-fork-and-Copy-On-Write-COW-Memory">The True Culprit: Linux <code>fork()</code> and Copy-On-Write (COW) Memory</h2>
+<p>We actually on the right track by isolating with <code>multiprocessing.Process</code>, the tricky part is by default on Linux, <code>multiprocessing</code> uses the <code>fork</code> start method.</p>
+<p>When a Linux process forks, the child process inherits the parent’s entire memory map using a highly efficient trick called <strong>Copy-On-Write</strong>. The child and parent share the exact same physical RAM/VRAM until one of them modifies a page of memory.</p>
 <p>Here is what was actually happening:</p>
 <ol>
 <li>The main Uvicorn web server (parent) forked a worker process (child) to run the PyTorch code snippet.</li>
@@ -271,7 +280,10 @@
 <li><strong>Page cache effects:</strong> Any file I/O during the child’s PyTorch initialization (loading shared libraries, etc.) gets charged to the cgroup’s page cache, which the kernel keeps around until memory pressure forces eviction.</li>
 </ul>
 <p>The key insight: <strong>the Python process was not leaking</strong>, but the container’s cgroup memory accounting was inflated by side effects of the <code>fork</code> lifecycle.</p>
-<h2 id="The-Solution-The-quot-spawn-quot-Context"><a href="#The-Solution-The-quot-spawn-quot-Context" class="headerlink" title="The Solution: The &quot;spawn&quot; Context"></a>The Solution: The <code>&quot;spawn&quot;</code> Context</h2><p>The ultimate fix was deceptively simple: explicitly changing the multiprocessing start method from <code>&quot;fork&quot;</code> to <code>&quot;spawn&quot;</code>.<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> multiprocessing <span class="keyword">as</span> mp</span><br><span class="line"></span><br><span class="line"><span class="comment"># Instead of p = mp.Process(...)</span></span><br><span class="line">ctx = mp.get_context(<span class="string">&#x27;spawn&#x27;</span>)</span><br><span class="line">p = ctx.Process(target=run_tests_worker, args=(...))</span><br></pre></td></tr></table></figure><br>Unlike <code>fork</code>, the <code>spawn</code> method boots up a completely fresh, empty Python interpreter. It does not share the parent’s memory map.</p>
+<h2 id="The-Solution-The-spawn-Context">The Solution: The <code>&quot;spawn&quot;</code> Context</h2>
+<p>The ultimate fix was deceptively simple: explicitly changing the multiprocessing start method from <code>&quot;fork&quot;</code> to <code>&quot;spawn&quot;</code>.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> multiprocessing <span class="keyword">as</span> mp</span><br><span class="line"></span><br><span class="line"><span class="comment"># Instead of p = mp.Process(...)</span></span><br><span class="line">ctx = mp.get_context(<span class="string">&#x27;spawn&#x27;</span>)</span><br><span class="line">p = ctx.Process(target=run_tests_worker, args=(...))</span><br></pre></td></tr></table></figure>
+<p>Unlike <code>fork</code>, the <code>spawn</code> method boots up a completely fresh, empty Python interpreter. It does not share the parent’s memory map.</p>
 <ul>
 <li>The worker process boots up in a clean address space, imports PyTorch, allocates its C++ caches and tensors, and runs the tests.</li>
 <li>When the worker process finishes and exits, the OS destroys the entire process, fully recovering 100% of the memory. Because the worker was never COW-linked to the parent, there is no arena fragmentation, no shared page table bloat, and no lingering cgroup accounting artifacts.</li>
@@ -281,8 +293,8 @@
   <img src="healthy_mem_chart.png" alt="bring back healthy memory chart">
   <figcaption>Bring back healthy memory chart</figcaption>
 </figure>
-
-<h2 id="Key-Takeaways"><a href="#Key-Takeaways" class="headerlink" title="Key Takeaways"></a>Key Takeaways</h2><ol>
+<h2 id="Key-Takeaways">Key Takeaways</h2>
+<ol>
 <li><strong>Python GC is not enough:</strong> <code>gc.collect()</code> only clears Python references. It cannot force C++ extensions to release global static caches or workspace memory held by libraries like oneDNN/MKL.</li>
 <li><strong>Beware of <code>fork</code> with heavy C-extensions:</strong> Using <code>multiprocessing</code> with the default <code>fork</code> method is dangerous when the child process imports massive C-libraries like PyTorch or TensorFlow. The Copy-On-Write mechanics and resulting glibc arena fragmentation will inadvertently inflate the container’s memory footprint.</li>
 <li><strong>OS-level isolation is king:</strong> If you are running heavy transient workloads on a memory-constrained cloud service, isolate them in a <code>&quot;spawn&quot;</code> process. Terminating a cleanly spawned process is the most reliable way to ensure Linux fully returns the RAM to the hypervisor.</li>
