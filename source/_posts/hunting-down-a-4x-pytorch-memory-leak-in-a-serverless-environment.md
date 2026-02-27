@@ -8,7 +8,7 @@ NOTE: This article was co-authored by myself and a coding agent while investigat
 
 ## The Issue: The 400% Memory Spike for a Single PyTorch Code Snippet
 
-Why does this matter? Cloud platforms bill dynamically based on memory consumption. A 4x spike from a single PyTorch code snippet means costs scale catastrophically when running dozens or hundreds of snippets in sequence.
+**Why does this matter?** Cloud platforms bill dynamically based on memory consumption. A 4x spike from a single PyTorch code snippet means costs scale catastrophically when running dozens or hundreds of snippets in sequence.
 
 <figure>
   <img src="image.png" alt="memory spike from 100MB to 400MB for a single pytorch code snippet">
