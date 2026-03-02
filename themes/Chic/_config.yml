@@ -4,7 +4,7 @@ navname: "知りたいままに | Xin's Notebook"
 # navigatior items
 nav:
   Posts: /archives
-  Categories: /category
+  # Categories: /category
   Tags: /tag
   Resume: /files/resume_0223.pdf
 
