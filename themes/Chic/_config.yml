@@ -5,7 +5,7 @@ navname: "知りたいままに | Xin's Notebook"
 nav:
   Posts: /archives
   # Categories: /category
-  Tags: /tag
+  # Tags: /tag
   Resume: /files/resume_0223.pdf
 
 # favicon
@@ -93,6 +93,8 @@ scripts:
   - /js/tocbot.min.js
     # tscanlin/tocbot: Build a table of contents from headings in an HTML document.
     # https://github.com/tscanlin/tocbot
+  - /js/tagcloud3d.js
+    # 3D Tag Cloud: Interactive 3D tag cloud visualization
 
 # Markdown
 markdown_it:

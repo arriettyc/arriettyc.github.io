@@ -3,6 +3,10 @@ layout: post
 title: NN Regularization -- Dropout in Additional Transformer Head
 date: 2025-01-10 21:48:42
 tags:
+  - neural-networks
+  - regularization
+  - dropout
+  - overfitting
 ---
 
 ### What is Regularization

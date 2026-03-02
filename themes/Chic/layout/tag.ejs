@@ -25,12 +25,31 @@ how to add a tag page:
     <div class="container">
         <div class="post-wrap tags">
             <h2 class="post-title">-&nbsp;Tag Cloud&nbsp;-</h2>
+            <p class="tag-cloud-subtitle">Explore topics through an interactive 3D visualization</p>
 
-            <div class="tag-cloud-tags">
-                <% site.tags.forEach(function(item){ %>
-                    <a href="<%- url_for(item.path) %>"><%- item.name %><small>(<%- item.length %>)</small></a>
-                <% }); %>
-            </div>
+            <div id="tag-cloud-3d" class="tag-cloud-3d-container"></div>
+
+            <script>
+                // Prepare tag data for 3D cloud
+                window.tagCloudData = [
+                    <% site.tags.forEach(function(item, index){ %>
+                        {
+                            name: '<%- item.name %> (<%- item.length %>)',
+                            href: '<%- url_for(item.path) %>',
+                            count: <%- item.length %>
+                        }<%= index < site.tags.length - 1 ? ',' : '' %>
+                    <% }); %>
+                ];
+            </script>
+
+            <!-- Fallback for non-JS browsers -->
+            <noscript>
+                <div class="tag-cloud-tags">
+                    <% site.tags.forEach(function(item){ %>
+                        <a href="<%- url_for(item.path) %>"><%- item.name %><small>(<%- item.length %>)</small></a>
+                    <% }); %>
+                </div>
+            </noscript>
         </div>
     </div>
 

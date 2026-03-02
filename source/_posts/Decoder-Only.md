@@ -3,6 +3,10 @@ layout: post
 title: Decoder Only
 date: 2025-01-08 22:39:26
 tags:
+  - transformers
+  - decoder
+  - attention-mechanism
+  - causal-modeling
 ---
 
 Origin Transformers = Encoder + Decoder

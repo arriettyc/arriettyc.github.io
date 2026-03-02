@@ -2,7 +2,12 @@
 title: Deepseek GRPO and R1
 date: 2025-02-02 13:23:34
 mathjax: true
-tag:
+tags:
+  - reinforcement-learning
+  - grpo
+  - deepseek
+  - policy-optimization
+  - post-training
 ---
 
 Across most popular open-source (OSS) models, there’s strong enthusiasm for climbing benchmark leaderboards. However, the majority of these benchmarks focus on pre-training performance — covering both reasoning and non-reasoning tasks.

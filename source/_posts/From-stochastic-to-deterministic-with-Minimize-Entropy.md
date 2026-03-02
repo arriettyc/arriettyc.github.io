@@ -3,6 +3,8 @@ layout: post
 title: From stochastic to deterministic with Minimize Entropy
 date: 2024-12-13 01:27:29
 tags:
+  - entropy
+  - information-theory
 ---
 I came across an interesting coding problem that well adopts the concept of solving a stochastic to deterministic solution by minimizing the entropy (uncertainty).
 

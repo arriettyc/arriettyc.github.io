@@ -2,6 +2,12 @@
 title: "Tokenizer Playbook: BPE, SentencePiece, and Multilingual Tricks"
 date: 2025-03-12 15:09:21
 tags:
+  - tokenization
+  - bpe
+  - pre-training
+  - multilingual
+  - text-processing
+  - compression
 ---
 
 This post is part of my journey toward pre-training. I see a near future where AI shifts from monolithic “AGI” toward orchestrated **ASI (Artificial Specialized Intelligence)** systems. If Mixture-of-Experts (MoE) is hard to train and expensive to serve, why not split the giant model into several smaller models that are easier to verify, control, deploy, and even run locally?

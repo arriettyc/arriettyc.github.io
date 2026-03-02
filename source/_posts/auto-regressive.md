@@ -3,6 +3,11 @@ layout: post
 title: Auto Regressive
 date: 2024-12-21 23:32:31
 tags:
+  - auto-regressive
+  - sequence-modeling
+  - statistical-models
+  - transformers
+  - language-models
 mathjax: true
 ---
 An Auto-Regressive (AR) model is a type of statistical model used in time series analysis to describe how the current value of a time series depends on its previous values (i.e. its own historical data).
