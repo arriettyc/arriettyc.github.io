@@ -43,7 +43,7 @@ def memory_efficient_loss(lm_head: nn.Module,
    return loss
 
 # during training
-output = self.model(**model_inputs, output_hidden_states=True)
+output = self.model.model(**model_inputs, output_hidden_states=True) # call model.model base transformer to avoid lm_head in fwd pass
 loss = self.memory_efficient_loss(
    lm_head=self.model.lm_head,
    hidden_states=output.hidden_states[-1],
