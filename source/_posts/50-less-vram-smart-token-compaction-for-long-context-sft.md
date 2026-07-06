@@ -1,11 +1,11 @@
 ---
-title: '50% Less VRAM: Smart Token Compaction for Long-Context Supervised Training'
+title: 'Smart Token Compaction for Long-Context Supervised Training'
 date: 2026-07-02 19:27:45
 tags:
 mathjax: true
 ---
 
-> **tl;dr** Throw away context tokens and only keep the active tokens (assistant responses) for loss calculation. Only keep the last layer's active `hidden_states` before passing to `lm_head`. Cut VRAM usage by ~50%.
+> **tl;dr** Throw away context tokens and only keep the active tokens (assistant responses) for loss calculation. Only keep the last layer's active `hidden_states` before passing to `lm_head`. **Cut VRAM usage by ~50%.**
 
 In vanilla LLM SFT training, the final loss calculation is often the biggest memory bottleneck for long context. The memory needed:
 
@@ -23,10 +23,15 @@ You can do this with `trl.SFTConfig(...loss_type="chunked_nll"...)`, or roll you
 def memory_efficient_loss(lm_head: nn.Module,
                          hidden_states: torch.Tensor, # (b, s, h)
                          labels: torch.Tensor,): # (b, s)
-   flatten_hidden_states = hidden_states.reshape(-1, hidden_states.shape[-1]) # (b*s, h)
-   flatten_labels = labels.reshape(-1) #(b*s, )
 
-   active_mask = flatten_labels != -100 # (b*s, )
+   # shift sequence and labels, so seq[i] map to label[i+1]
+   hidden_states = hidden_states[:, :-1, :] # drop last one, (b, s-1, h)
+   labels = labels[:, 1:] # drop the first one (b, s-1)
+
+   flatten_hidden_states = hidden_states.reshape(-1, hidden_states.shape[-1]) # (b*(s-1), h)
+   flatten_labels = labels.reshape(-1) #(b*(s-1), )
+
+   active_mask = flatten_labels != -100 # (b*(s-1), )
 
    # if a batch happens to contain no target tokens,
    # return a dummy zero loss to keep the training loop from crashing.
